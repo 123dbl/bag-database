@@ -43,8 +43,8 @@ import com.github.swrirobotics.persistence.Topic;
 import com.github.swrirobotics.support.web.BagList;
 import com.github.swrirobotics.support.web.ExtJsFilter;
 import org.assertj.core.util.Lists;
-import org.junit.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.core.io.AbstractResource;
 import org.springframework.core.io.Resource;
 import org.springframework.mock.web.MockMultipartFile;
@@ -58,7 +58,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
@@ -71,7 +71,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class BagControllerTest extends WebAppConfigurationAware {
-    @MockBean
+    @MockitoBean
     private BagService bagService;
 
     public BagWrapper makeTestBagWrapper() {

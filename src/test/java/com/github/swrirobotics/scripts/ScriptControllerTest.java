@@ -38,10 +38,10 @@ import com.github.swrirobotics.persistence.ScriptResult;
 import com.github.swrirobotics.config.WebAppConfigurationAware;
 import com.github.swrirobotics.support.web.*;
 import com.google.common.base.Charsets;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 
@@ -61,7 +61,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class ScriptControllerTest extends WebAppConfigurationAware {
-    @MockBean
+    @MockitoBean
     ScriptService scriptService;
 
     public ScriptDTO makeScript() {
@@ -153,7 +153,7 @@ public class ScriptControllerTest extends WebAppConfigurationAware {
         mockMvc.perform(get("/scripts/get_result_by_uuid")
             .param("runUuid", uuid.toString()))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.runUuid").value(uuid.toString()))
             .andDo(document("scripts/{method-name}",
                 preprocessRequest(prettyPrint()),

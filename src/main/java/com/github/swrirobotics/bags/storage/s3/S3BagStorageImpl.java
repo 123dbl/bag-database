@@ -49,7 +49,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
@@ -59,7 +59,7 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
@@ -353,7 +353,7 @@ public class S3BagStorageImpl extends StatusProvider implements BagStorage {
     @Override
     public void start() {
         myLogger.info(getStorageId() + ": Initializing S3 client.");
-        AwsSessionCredentials credentials = AwsSessionCredentials.create(myConfig.accessKey, myConfig.secretKey, "");
+        AwsBasicCredentials credentials = AwsBasicCredentials.create(myConfig.accessKey, myConfig.secretKey);
         var builder = S3Client.builder().credentialsProvider(StaticCredentialsProvider.create(credentials));
         if (myConfig.endPoint != null && !myConfig.endPoint.isEmpty()) {
             builder.endpointOverride(URI.create(myConfig.endPoint));

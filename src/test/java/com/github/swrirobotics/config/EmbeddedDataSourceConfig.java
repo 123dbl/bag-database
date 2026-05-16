@@ -31,6 +31,7 @@
 package com.github.swrirobotics.config;
 
 import org.h2gis.functions.factory.H2GISDBFactory;
+import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -47,7 +48,12 @@ public class EmbeddedDataSourceConfig {
 
     @Bean
     public DataSource dataSource() throws SQLException {
-        System.setProperty("hibernate.dialect", "org.hibernate.spatial.dialect.h2geodb.GeoDBDialect");
         return H2GISDBFactory.createDataSource("testdb", true);
+    }
+
+    @Bean
+    public HibernatePropertiesCustomizer hibernatePropertiesCustomizer() {
+        return hibernateProperties ->
+            hibernateProperties.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
     }
 }

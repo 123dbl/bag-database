@@ -33,16 +33,16 @@ package com.github.swrirobotics.account;
 import com.github.swrirobotics.config.ConfigService;
 import com.github.swrirobotics.config.WebSecurityConfigurationAware;
 import com.github.swrirobotics.support.web.Configuration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Collections;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
@@ -55,7 +55,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserAuthenticationIntegrationTest extends WebSecurityConfigurationAware {
     @Autowired
     private UserService userService;
-    @MockBean
+    @MockitoBean
     private ConfigService configService;
 
     @Test

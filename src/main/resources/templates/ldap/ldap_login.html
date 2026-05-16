@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:include="fragments/header :: libs">
+<head th:replace="~{fragments/header :: libs}">
     <meta charset="UTF-8">
     <title>Bag Database Login</title>
 </head>
@@ -26,13 +26,13 @@
       }
     </style>
 <!-- Custom styles for this template -->
-<link th:href="@{resources/css/login.css}" rel="stylesheet">
+<link th:href="@{/resources/css/login.css}" rel="stylesheet">
 
 <body class="text-center">
 
 <div th:fragment="content">
     <form class="form-signin" name="f" th:action="@{/ldap_login}" method="post">
-        <img class="mb-4" th:src="@{resources/images/bag_database_logo_256.png}" alt="Bag Database Logo" height="256" width="256">
+        <img class="mb-4" th:src="@{/resources/images/bag_database_logo_256.png}" alt="Bag Database Logo" height="256" width="256">
 
         <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
         <div th:if="${param.error}" class="alert alert-danger">

@@ -1,4 +1,4 @@
-FROM maven:3.8.5-openjdk-11 as base-layer
+FROM maven:3.9-eclipse-temurin-17 AS base-layer
 
 LABEL maintainer="david.anthony@swri.org"
 LABEL author="P.J. Reed"
@@ -12,21 +12,20 @@ RUN mvn -e -B dependency:resolve
 COPY src ./src
 RUN mvn -e -B package
 
-FROM tomcat:9-jdk11
+FROM eclipse-temurin:17-jre
 
 LABEL maintainer="david.anthony@swri.org"
 LABEL author="P.J. Reed"
 
-VOLUME ["/bags", "/root/.ros-bag-database/indexes", "/usr/local/tomcat/logs"]
+WORKDIR /app
+
+VOLUME ["/bags", "/root/.ros-bag-database/indexes", "/logs"]
 EXPOSE 8080
 
 # Need to manually install ffmpeg and perl for streaming video
 RUN apt-get update \
     && apt-get install -y ffmpeg perl \
     && rm -rf /var/lib/apt/lists/*
-RUN rm -rf /usr/local/tomcat/webapps/
-COPY --from=base-layer /app/target/*.war /usr/local/tomcat/webapps/ROOT.war
-COPY src/main/docker/entrypoint.sh /
-COPY src/main/docker/server.xml /usr/local/tomcat/conf/server.xml
+COPY --from=base-layer /app/target/*.jar /app/bag-database.jar
 
-CMD ["/entrypoint.sh"]
+ENTRYPOINT ["java", "-jar", "/app/bag-database.jar"]

@@ -32,14 +32,14 @@ package com.github.swrirobotics.scripts;
 
 import com.github.swrirobotics.config.WebAppConfigurationAware;
 import com.github.swrirobotics.persistence.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ScriptServiceTest extends WebAppConfigurationAware {
     @Autowired

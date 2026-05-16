@@ -23,15 +23,8 @@
         // up in the Navigation menu.  It does not give the user the ability to
         // perform administrative actions on the backend.
         var isAdmin = /*[[${#authorization.expression('hasRole(''ROLE_ADMIN'')')}]]*/ false;
-        var loadCompressed = /*[[${config != null and !config.debugJavascript}]]*/ true;
-        if (loadCompressed) {
-            Ext.Loader.setConfig({enabled: false});
-        }
-        else {
-            Ext.Loader.setPath('BagDatabase', 'resources/js');
-        }
+        Ext.Loader.setPath('BagDatabase', 'resources/js');
     </script>
-    <script type="text/javascript" th:src="@{/resources/js/compressed.js}" th:if="${config != null and !config.debugJavascript}"></script>
 </head>
 <body>
 <div class="navbar navbar-inverse navbar-fixed-top" th:fragment="header">

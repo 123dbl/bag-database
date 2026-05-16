@@ -30,9 +30,23 @@
 
 package com.github.swrirobotics;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
 /**
- * This class only exists to serve as a top-level class that we can use as the start
- * point for component scanning.
- * Spring's entry point is in com.github.swrirobotics.config.ApplicationConfig.
+ * Spring Boot entry point for the Bag Database application.
  */
-public class BagApplication {}
+@SpringBootApplication
+@EnableAsync
+@EnableScheduling
+@EnableJpaRepositories
+@EnableTransactionManagement(proxyTargetClass = true)
+public class BagApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(BagApplication.class, args);
+    }
+}

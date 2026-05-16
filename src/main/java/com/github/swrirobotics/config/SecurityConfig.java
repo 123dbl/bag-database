@@ -31,21 +31,22 @@
 package com.github.swrirobotics.config;
 
 import com.github.swrirobotics.account.UserService;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,27 +56,35 @@ import org.springframework.security.ldap.authentication.LdapAuthenticator;
 import org.springframework.security.ldap.ppolicy.PasswordPolicyAwareContextSource;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.csrf.MissingCsrfTokenException;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true)
 @Configuration
-class SecurityConfig extends WebSecurityConfigurerAdapter {
-    @Autowired
-    private ConfigService myConfigService;
+class SecurityConfig {
+    private final ConfigService myConfigService;
+    private final Environment myEnvironment;
 
-    @Autowired
-    private Environment myEnvironment;
+    private final Logger myLogger = LoggerFactory.getLogger(SecurityConfig.class);
 
-    final private Logger myLogger = LoggerFactory.getLogger(SecurityConfig.class);
+    SecurityConfig(ConfigService myConfigService, Environment myEnvironment) {
+        this.myConfigService = myConfigService;
+        this.myEnvironment = myEnvironment;
+    }
 
     private static class CsrfAccessDeniedHandler extends AccessDeniedHandlerImpl {
         @Override
@@ -104,90 +113,94 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new AjaxAuthenticationSuccessHandler("/");
     }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth
-                .eraseCredentials(true)
-                .userDetailsService(userService())
-                .passwordEncoder(passwordEncoder());
+    @Bean
+    public AuthenticationManager authenticationManager(UserService userService,
+                                                       PasswordEncoder passwordEncoder) {
+        List<AuthenticationProvider> providers = new ArrayList<>();
+        providers.add(daoAuthenticationProvider(userService, passwordEncoder));
 
-        com.github.swrirobotics.support.web.Configuration config = myConfigService.getConfiguration();
-        if (config != null) {
-            String ldapServer = config.getLdapServer();
-            if (ldapServer != null && !ldapServer.isEmpty()) {
-                myLogger.info("Enabling LDAP authentication.");
-                auth.authenticationProvider(ldapAuthenticationProvider());
-            }
+        if (isLdapEnabled()) {
+            myLogger.info("Enabling LDAP authentication.");
+            providers.add(ldapAuthenticationProvider());
         }
+
+        return new ProviderManager(providers);
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        Set<String> profileSet = Sets.newHashSet(myEnvironment.getActiveProfiles());
-        myLogger.error("Active profiles: " + Joiner.on(',').join(profileSet));
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   AuthenticationManager authenticationManager,
+                                                   AuthenticationSuccessHandler authenticationSuccessHandler)
+            throws Exception {
+        Set<String> profileSet = activeProfiles();
+        myLogger.info("Active profiles: {}", String.join(",", profileSet));
         if (profileSet.contains("test")) {
-            // CSRF protection is a pain to work around if we're doing unit tests;
-            // disable it.
-            http = http.csrf().disable();
+            // CSRF protection is a pain to work around if we're doing unit tests.
+            http.csrf(csrf -> csrf.disable());
         }
 
         http
-                .cors().and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-                .and()
-                    .exceptionHandling().accessDeniedHandler(accessDeniedHandler())
-                .and()
-                    // Need to allow same-origin iframes in order for file uploading to work
-                    .headers().frameOptions().sameOrigin()
-                .and()
-                    .authorizeRequests()
-                        .antMatchers(
-                                "/favicon.ico",
-                                "/generalError",
-                                "/resources/**").permitAll(); // List resources that any users can access no matter what
+            .authenticationManager(authenticationManager)
+            .cors(Customizer.withDefaults())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+            .exceptionHandling(exceptions -> exceptions.accessDeniedHandler(accessDeniedHandler()))
+            // Need to allow same-origin iframes in order for file uploading to work.
+            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
+            .authorizeHttpRequests(authorize -> {
+                authorize.requestMatchers(
+                    "/favicon.ico",
+                    "/error",
+                    "/generalError",
+                    "/resources/**").permitAll();
 
-        com.github.swrirobotics.support.web.Configuration config = myConfigService.getConfiguration();
-        String ldapServer = null;
-        if (config != null) {
-            ldapServer = config.getLdapServer();
-        }
-        if (profileSet.contains("test_ldap") || ldapServer != null && !ldapServer.isEmpty()) {
+                if (profileSet.contains("test_ldap") || isLdapEnabled()) {
+                    authorize.anyRequest().authenticated();
+                }
+                else {
+                    authorize.requestMatchers(
+                        "/",
+                        "/bags/**",
+                        "/scripts/**",
+                        "/register/**",
+                        "/status/**").permitAll();
+                    authorize.anyRequest().authenticated();
+                }
+            });
+
+        if (profileSet.contains("test_ldap") || isLdapEnabled()) {
             // If we're running with an LDAP server, redirect to the LDAP login page for anything else
             http
-                    .authorizeRequests()
-                        .anyRequest().authenticated()
-                    .and()
-                        .formLogin()
-                            .loginPage("/ldap_login")
-                                .successHandler(authenticationSuccessHandler())
-                                .permitAll()
-                    .and()
-                        .logout()
-                            .logoutUrl("/logout").permitAll()
-                            .logoutSuccessUrl("/ldap_login?logout");
+                .formLogin(form -> form
+                    .loginPage("/ldap_login")
+                    .successHandler(authenticationSuccessHandler)
+                    .permitAll())
+                .logout(logout -> logout
+                    .logoutUrl("/logout")
+                    .permitAll()
+                    .logoutSuccessUrl("/ldap_login?logout"));
         }
         else {
             // If we're not using LDAP, the only user role is the administrator; unauthenticated
             // users have a larger list they can access
             http
-                    .authorizeRequests()
-                        .antMatchers("/",
-                                     "/bags/**",
-                                     "/scripts/**",
-                                     "/register/**",
-                                     "/status/**").permitAll()
-                        .anyRequest().authenticated()
-                    .and()
-                        .formLogin()
-                            .successHandler(authenticationSuccessHandler())
-                            .loginPage("/signin")
-                            .permitAll()
-                    .and()
-                        .logout()
-                            .logoutUrl("/logout")
-                            .permitAll()
-                            .logoutSuccessUrl("/signin?logout");
+                .formLogin(form -> form
+                    .successHandler(authenticationSuccessHandler)
+                    .loginPage("/signin")
+                    .permitAll())
+                .logout(logout -> logout
+                    .logoutUrl("/logout")
+                    .permitAll()
+                    .logoutSuccessUrl("/signin?logout"));
         }
+
+        return http.build();
+    }
+
+    private DaoAuthenticationProvider daoAuthenticationProvider(UserService userService,
+                                                               PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
     }
 
     @Bean
@@ -202,7 +215,7 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
         if (config != null) {
             searchBase = config.getLdapSearchBase();
         }
-        myLogger.info("LDAP search base: [" + searchBase + "]");
+        myLogger.info("LDAP search base: [{}]", searchBase);
         return new DefaultLdapAuthoritiesPopulator(ldapContextSource(), searchBase);
     }
 
@@ -214,7 +227,7 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
         if (config != null) {
             ldapProvider = config.getLdapServer();
         }
-        myLogger.info("LDAP provider:  [" + ldapProvider + "]");
+        myLogger.info("LDAP provider: [{}]", ldapProvider);
 
         if (ldapProvider.isEmpty()) {
             ldapProvider = "ldap://localhost:389/dc=springframework,dc=org";
@@ -239,12 +252,21 @@ class SecurityConfig extends WebSecurityConfigurerAdapter {
         if (config != null) {
             userPattern = config.getLdapUserPattern();
         }
-        myLogger.info("LDAP user pattern: [" + userPattern + "]");
+        myLogger.info("LDAP user pattern: [{}]", userPattern);
         authenticator.setUserDnPatterns(new String[]{userPattern});
         return authenticator;
     }
 
     private AccessDeniedHandler accessDeniedHandler() {
         return new CsrfAccessDeniedHandler();
+    }
+
+    private boolean isLdapEnabled() {
+        com.github.swrirobotics.support.web.Configuration config = myConfigService.getConfiguration();
+        return config != null && config.getLdapServer() != null && !config.getLdapServer().isEmpty();
+    }
+
+    private Set<String> activeProfiles() {
+        return Arrays.stream(myEnvironment.getActiveProfiles()).collect(Collectors.toSet());
     }
 }

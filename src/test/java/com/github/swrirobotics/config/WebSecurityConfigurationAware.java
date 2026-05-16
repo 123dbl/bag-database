@@ -30,24 +30,24 @@
 
 package com.github.swrirobotics.config;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.security.web.FilterChainProxy;
-
-import javax.inject.Inject;
 
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 public abstract class WebSecurityConfigurationAware extends WebAppConfigurationAware {
 
-    @Inject
+    @Autowired
     private FilterChainProxy springSecurityFilterChain;
 
-    @Before
+    @BeforeEach
     @Override
-    public void before() {
+    public void before(RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = webAppContextSetup(this.wac)
-                .apply(MockMvcRestDocumentation.documentationConfiguration(this.restDocumentation))
+                .apply(MockMvcRestDocumentation.documentationConfiguration(restDocumentation))
                 .addFilters(this.springSecurityFilterChain).build();
     }
 }

@@ -30,47 +30,33 @@
 
 package com.github.swrirobotics.config;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.runner.RunWith;
-import org.springframework.restdocs.JUnitRestDocumentation;
+import com.github.swrirobotics.BagApplication;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.inject.Inject;
-
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(RestDocumentationExtension.class)
 @ActiveProfiles("test")
-@WebAppConfiguration
-@ContextConfiguration(classes = {
-        ApplicationConfig.class,
-        EmbeddedDataSourceConfig.class,
-        JpaConfig.class,
-        LiquibaseConfig.class,
-        WebMvcConfig.class,
-        WebSocketConfig.class,
-        SecurityConfig.class
-})
+@SpringBootTest(classes = {BagApplication.class, EmbeddedDataSourceConfig.class})
 public abstract class WebAppConfigurationAware {
-    @Rule
-    public JUnitRestDocumentation restDocumentation =
-            new JUnitRestDocumentation("target/generated-snippets");
-
-    @Inject
+    @Autowired
     protected WebApplicationContext wac;
+
     protected MockMvc mockMvc;
 
-    @Before
-    public void before() {
+    @BeforeEach
+    public void before(RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = webAppContextSetup(this.wac)
-                .apply(MockMvcRestDocumentation.documentationConfiguration(this.restDocumentation))
+                .apply(MockMvcRestDocumentation.documentationConfiguration(restDocumentation))
                 .build();
     }
 

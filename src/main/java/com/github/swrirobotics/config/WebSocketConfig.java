@@ -39,7 +39,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.config.SimpleBrokerRegistration;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.Session;
 import org.springframework.session.web.socket.config.annotation.AbstractSessionWebSocketMessageBrokerConfigurer;
 import org.springframework.session.web.socket.server.SessionRepositoryMessageInterceptor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -48,7 +48,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 @Configuration
 @EnableScheduling
 @EnableWebSocketMessageBroker
-public class WebSocketConfig extends AbstractSessionWebSocketMessageBrokerConfigurer<ExpiringSession> {
+public class WebSocketConfig extends AbstractSessionWebSocketMessageBrokerConfigurer<Session> {
     private final Logger myLogger = LoggerFactory.getLogger(WebSocketConfig.class);
 
     @Autowired
@@ -76,7 +76,7 @@ public class WebSocketConfig extends AbstractSessionWebSocketMessageBrokerConfig
     }
 
     @Override
-    public SessionRepositoryMessageInterceptor<ExpiringSession> sessionRepositoryInterceptor() {
+    public SessionRepositoryMessageInterceptor<Session> sessionRepositoryInterceptor() {
         myLogger.error("*** Registering interceptor ***");
         return super.sessionRepositoryInterceptor();
     }

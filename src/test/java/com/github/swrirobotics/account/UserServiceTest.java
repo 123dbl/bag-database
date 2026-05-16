@@ -30,13 +30,11 @@
 
 package com.github.swrirobotics.account;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -44,9 +42,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
     @InjectMocks
@@ -54,9 +53,6 @@ public class UserServiceTest {
 
     @Mock
     public AccountRepository accountRepositoryMock;
-
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void shouldInitializeWithOneDemoUser() {
@@ -68,13 +64,11 @@ public class UserServiceTest {
 
     @Test
     public void shouldThrowExceptionWhenUserNotFound() {
-        // arrange
-        thrown.expect(UsernameNotFoundException.class);
-        thrown.expectMessage("user not found");
-
         when(accountRepositoryMock.findByEmail("user@example.com")).thenReturn(null);
-        // act
-        userService.loadUserByUsername("user@example.com");
+
+        assertThatThrownBy(() -> userService.loadUserByUsername("user@example.com"))
+            .isInstanceOf(UsernameNotFoundException.class)
+            .hasMessage("user not found");
     }
 
     @Test

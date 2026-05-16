@@ -194,7 +194,12 @@ Ext.define('BagDatabase.views.BagDatabaseViewport',
 
         // For the sake of convenience, the viewport creates a STOMP client.  Any other widgets that
         // want to use the client for communication can use this client to subscribe.
-        me.stompClient.connect({},
+        var headers = {};
+        if (csrfHeader && csrfToken) {
+            headers[csrfHeader] = csrfToken;
+        }
+
+        me.stompClient.connect(headers,
             function(frame) {
                 me.isStompConnected = true;
                 me.subscriptions.forEach(function(subscription) {

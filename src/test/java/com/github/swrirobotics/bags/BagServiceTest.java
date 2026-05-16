@@ -31,13 +31,13 @@
 package com.github.swrirobotics.bags;
 
 import com.github.swrirobotics.config.WebAppConfigurationAware;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BagServiceTest extends WebAppConfigurationAware {
     @Autowired

@@ -30,41 +30,32 @@
 
 package com.github.swrirobotics.config;
 
-import com.github.swrirobotics.BagApplication;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.h2gis.functions.factory.H2GISDBFactory;
-import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.transaction.annotation.TransactionManagementConfigurer;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.Properties;
 
 @Configuration
-@EnableTransactionManagement(mode = AdviceMode.PROXY, proxyTargetClass = true)
-@EnableJpaRepositories(basePackageClasses = BagApplication.class,
-        transactionManagerRef = "annotationDrivenTransactionManager")
-@EnableJdbcHttpSession
-public class JpaConfig implements TransactionManagementConfigurer {
+public class JpaConfig {
     @Autowired(required = false)
     private DataSourceProperties properties;
 
     private final Logger myLogger = LoggerFactory.getLogger(JpaConfig.class);
+
+    @Bean
+    @Profile("!test")
+    public HibernatePropertiesCustomizer hibernatePropertiesCustomizer() {
+        return hibernateProperties -> hibernateProperties.put("hibernate.dialect", hibernateDialect());
+    }
 
     @Bean
     @Profile("!test")
@@ -85,13 +76,9 @@ public class JpaConfig implements TransactionManagementConfigurer {
         config.addDataSourceProperty("initializationFailTimeout", "10000");
 
         if (properties.getDriver().equals("org.postgresql.Driver")) {
-            System.setProperty("hibernate.dialect", "org.hibernate.spatial.dialect.postgis.PostgisDialect");
-
             return new HikariDataSource(config);
         }
         else {
-            System.setProperty("hibernate.dialect", "org.hibernate.spatial.dialect.h2geodb.GeoDBDialect");
-
             try {
                 return H2GISDBFactory.createDataSource("testdb", true);
             }
@@ -102,31 +89,11 @@ public class JpaConfig implements TransactionManagementConfigurer {
         }
     }
 
-    @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-        myLogger.info("entityManagerFactory");
-        LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
-        entityManagerFactoryBean.setDataSource(dataSource());
-        entityManagerFactoryBean.setPackagesToScan("com.github.swrirobotics");
-        entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-
-        Properties jpaProperties = new Properties();
-        // Disable HBM2DDL; we use Liquibase to create our database
-        jpaProperties.put(Environment.HBM2DDL_AUTO, "");
-        // Set a large batch size for better performance over slow network links
-        jpaProperties.put(Environment.STATEMENT_BATCH_SIZE, "100");
-        jpaProperties.put(Environment.ORDER_INSERTS, "true");
-        jpaProperties.put(Environment.ORDER_UPDATES, "true");
-        jpaProperties.put(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, "true");
-        entityManagerFactoryBean.setJpaProperties(jpaProperties);
-
-        return entityManagerFactoryBean;
+    private String hibernateDialect() {
+        if (properties.getDriver().equals("org.postgresql.Driver")) {
+            return "org.hibernate.dialect.PostgreSQLDialect";
+        }
+        return "org.hibernate.dialect.H2Dialect";
     }
 
-    @Override
-    @Bean
-    public PlatformTransactionManager annotationDrivenTransactionManager() {
-        var txManager = new JpaTransactionManager();
-        return txManager;
-    }
 }

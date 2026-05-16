@@ -36,25 +36,25 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.text.MessageFormat;
 
 @Controller
 class CustomErrorController {
 
     /**
-     * Display an error page, as defined in web.xml <code>custom-error</code> element.
+     * Display the Boot-managed error page.
      */
     @RequestMapping("generalError")    
     public String generalError(HttpServletRequest request, HttpServletResponse response, Model model) {
         // retrieve some useful information from the request
-        Integer statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
-        Throwable throwable = (Throwable) request.getAttribute("javax.servlet.error.exception");
-        // String servletName = (String) request.getAttribute("javax.servlet.error.servlet_name");
+        Integer statusCode = (Integer) request.getAttribute("jakarta.servlet.error.status_code");
+        Throwable throwable = (Throwable) request.getAttribute("jakarta.servlet.error.exception");
+        // String servletName = (String) request.getAttribute("jakarta.servlet.error.servlet_name");
         String exceptionMessage = getExceptionMessage(throwable, statusCode);
 
-        String requestUri = (String) request.getAttribute("javax.servlet.error.request_uri");
+        String requestUri = (String) request.getAttribute("jakarta.servlet.error.request_uri");
         if (requestUri == null) {
             requestUri = "Unknown";
         }

@@ -30,8 +30,8 @@
 
 package com.github.swrirobotics.persistence;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.io.Serializable;
 
 /**

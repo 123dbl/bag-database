@@ -30,8 +30,11 @@
 
 package com.github.swrirobotics.scripts;
 
-import com.amihaiemil.docker.Docker;
-import com.amihaiemil.docker.TcpDocker;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.swrirobotics.bags.NonexistentBagException;
 import com.github.swrirobotics.config.ConfigService;
 import com.github.swrirobotics.persistence.*;
@@ -58,11 +61,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.json.*;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.json.*;
 import java.io.StringReader;
-import java.net.URI;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -436,7 +438,7 @@ public class ScriptService extends StatusProvider {
             throw new ScriptRunException("You must specify bag files.");
         }
 
-        Docker docker = new TcpDocker(URI.create(configService.getConfiguration().getDockerHost()));
+        DockerClient docker = createDockerClient();
 
         Script script = scriptRepository.findById(scriptId).orElseThrow(
             () -> new ScriptRunException("Script " + scriptId + " doesn't exist"));
@@ -466,6 +468,23 @@ public class ScriptService extends StatusProvider {
 
     public void stopRunningScript() {
         // TODO pjr Interrupt a script that is currently running
+    }
+
+    private DockerClient createDockerClient() {
+        var configBuilder = DefaultDockerClientConfig.createDefaultConfigBuilder();
+        String dockerHost = configService.getConfiguration().getDockerHost();
+        if (dockerHost != null && !dockerHost.isBlank()) {
+            configBuilder.withDockerHost(dockerHost);
+        }
+
+        var dockerConfig = configBuilder.build();
+        DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
+            .dockerHost(dockerConfig.getDockerHost())
+            .sslConfig(dockerConfig.getSSLConfig())
+            .build();
+        return DockerClientBuilder.getInstance(dockerConfig)
+            .withDockerHttpClient(httpClient)
+            .build();
     }
 
     @Override

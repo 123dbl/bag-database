@@ -52,27 +52,7 @@ Ext.onReady(function() {
         startApplication();
     }
     catch (e) {
-        if (loadCompressed && e.msg.match('Ext.Loader is not enabled')) {
-            // If the app fails to start and it is because we were set to load in non-debug
-            // mode but no classes were available, that probably means we're running in
-            // an and offline test environment (like "mvn tomcat7:run") and the compressed.js
-            // file is not on the classpath.  In order so that we can reliably run, enable
-            // the loader and try requiring a class again; if the class successfully loads,
-            // that will cause the application to start.
-            Ext.Loader.setConfig({enabled: true});
-            Ext.Loader.setPath('BagDatabase', 'resources/js');
-            console.log('Could not load compressed application; retrying in debug mode.')
-            try {
-                Ext.require('BagDatabase.views.BagDatabaseViewport');
-            }
-            catch(e2) {
-                console.error('Error loading application in debug mode:');
-                console.error(e);
-            }
-        }
-        else {
-            console.error('Failed to load Bag Database:');
-            console.error(e);
-        }
+        console.error('Failed to load Bag Database:');
+        console.error(e);
     }
 });

@@ -135,7 +135,7 @@ public class ScriptController {
     }
 
     @RequestMapping(value = "/get_result_by_uuid",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ScriptResultDTO getScriptResultByUuid(@RequestParam UUID runUuid) {
         myLogger.info("getScriptResultByUuid: " + runUuid.toString());
         return new ScriptResultDTO(myScriptService.getScriptResultByUuid(runUuid));

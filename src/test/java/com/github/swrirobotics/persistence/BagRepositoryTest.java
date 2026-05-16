@@ -31,7 +31,7 @@
 package com.github.swrirobotics.persistence;
 
 import com.github.swrirobotics.config.WebAppConfigurationAware;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Rollback
 public class BagRepositoryTest extends WebAppConfigurationAware {

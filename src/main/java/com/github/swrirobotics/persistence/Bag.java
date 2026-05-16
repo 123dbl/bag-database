@@ -34,10 +34,9 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.hibernate.annotations.Formula;
-import org.hibernate.annotations.Type;
 import org.locationtech.jts.geom.Point;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -273,8 +272,7 @@ public class Bag implements Serializable {
         this.vehicle = vehicle;
     }
 
-    @Lob
-    @Type(type = "org.hibernate.type.TextType")
+    @Column(columnDefinition = "TEXT")
     public String getDescription() {
         return description;
     }

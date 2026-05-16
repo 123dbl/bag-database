@@ -31,8 +31,8 @@
 package com.github.swrirobotics.db;
 
 import com.github.swrirobotics.config.WebAppConfigurationAware;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
@@ -71,6 +71,6 @@ public class SpatialDatabaseTest extends WebAppConfigurationAware {
             }
         }
 
-        Assert.assertTrue("Geometry row was not found.", foundRow);
+        Assertions.assertTrue(foundRow, "Geometry row was not found.");
     }
 }

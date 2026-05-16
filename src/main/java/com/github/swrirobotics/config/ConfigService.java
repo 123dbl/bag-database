@@ -57,7 +57,7 @@ public class ConfigService {
 
     private BagScanner myBagScanner = null;
 
-    @Value(ApplicationConfig.SETTINGS_LOCATION)
+    @Value("${bag-database.settings-location:file://${HOME}/.ros-bag-database/settings.yml}")
     private String filename;
 
     private final Logger myLogger = LoggerFactory.getLogger(ConfigService.class);

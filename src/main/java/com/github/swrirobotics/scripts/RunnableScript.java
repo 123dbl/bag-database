@@ -30,8 +30,15 @@
 
 package com.github.swrirobotics.scripts;
 
-import com.amihaiemil.docker.Container;
-import com.amihaiemil.docker.Docker;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.exception.DockerException;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.github.dockerjava.core.command.PullImageResultCallback;
+import com.github.dockerjava.core.command.WaitContainerResultCallback;
 import com.github.swrirobotics.bags.BagService;
 import com.github.swrirobotics.bags.reader.exceptions.BagReaderException;
 import com.github.swrirobotics.bags.storage.BagStorage;
@@ -50,8 +57,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.json.*;
+import jakarta.json.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +79,7 @@ public class RunnableScript implements Runnable {
     final private UUID runUuid;
     private Script script;
     private List<Bag> bags;
-    private Docker docker;
+    private DockerClient docker;
     private long startTime;
     private Future<?> future;
     private Status endStatus;
@@ -90,7 +98,7 @@ public class RunnableScript implements Runnable {
         this.scriptService = scriptService;
     }
 
-    public void initialize(Script script, List<Bag> bags, Docker docker) {
+    public void initialize(Script script, List<Bag> bags, DockerClient docker) {
         this.script = script;
         this.bags = bags;
         this.docker = docker;
@@ -161,8 +169,6 @@ public class RunnableScript implements Runnable {
             bagIds.add(bag.getId());
         }
 
-        Container container = null;
-
         File scriptFile = null;
         // A list of bag wrappers created for processing bags.  These may contain open filesystem or network
         // resources, so they must be closed afterward.
@@ -192,8 +198,8 @@ public class RunnableScript implements Runnable {
             }
 
             // Assemble bind configurations for our script and all of the bags it uses
-            JsonArrayBuilder bindBuilder = Json.createArrayBuilder();
-            bindBuilder.add(Joiner.on(':').join(SCRIPTS_DIR + scriptFile.getName(), SCRIPT_TMP_NAME));
+            List<Bind> binds = new ArrayList<>();
+            binds.add(Bind.parse(Joiner.on(':').join(SCRIPTS_DIR + scriptFile.getName(), SCRIPT_TMP_NAME)));
             List<String> command = new ArrayList<>();
             command.add(SCRIPT_TMP_NAME);
             for (Bag bag : bags) {
@@ -210,14 +216,14 @@ public class RunnableScript implements Runnable {
                     String dindBagPath = config.dockerPath;
                     String absolutePath = wrapper.getBagFile().getPath().toAbsolutePath().toString();
                     relativeBagPath = absolutePath.replaceFirst(baseBagPath, dindBagPath);
-                    bindBuilder.add(Joiner.on(':').join(relativeBagPath, relativeBagPath, ""));
+                    binds.add(Bind.parse(Joiner.on(':').join(relativeBagPath, relativeBagPath, "")));
                     command.add("/" + relativeBagPath);
                 }
                 else {
                     // Bag files downloaded from remote storage backends to local storage should be in the same
                     // directory that we use for writing script files
                     String fileName = "/" + wrapper.getBagFile().getPath().toFile().getName();
-                    bindBuilder.add(Joiner.on(':').join(SCRIPTS_DIR + fileName, fileName, ""));
+                    binds.add(Bind.parse(Joiner.on(':').join(SCRIPTS_DIR + fileName, fileName, "")));
                     command.add(fileName);
                 }
             }
@@ -251,52 +257,39 @@ public class RunnableScript implements Runnable {
                 }
             }
             myLogger.info("Pulling Docker image: [" + label + "] with tag: [" + tag + "]");
-            docker.images().pull(label, tag);
+            docker.pullImageCmd(label)
+                .withTag(tag)
+                .exec(new PullImageResultCallback())
+                .awaitCompletion();
 
-            JsonObjectBuilder hostConfig =  Json.createObjectBuilder().add("Binds", bindBuilder);
+            HostConfig hostConfig = HostConfig.newHostConfig().withBinds(binds.toArray(new Bind[0]));
             if (script.getMemoryLimitBytes() != null && script.getMemoryLimitBytes() > 0) {
-                hostConfig = hostConfig.add("Memory", script.getMemoryLimitBytes());
+                hostConfig.withMemory(script.getMemoryLimitBytes());
             }
 
-            // Assemble the final configuration
-            JsonObjectBuilder builder = Json.createObjectBuilder();
-            builder = builder
-                .add("NetworkDisable", !script.getAllowNetworkAccess())
-                .add("Image", script.getDockerImage())
-                .add("HostConfig", hostConfig)
-                .add("Cmd", Json.createArrayBuilder(command));
+            var createContainerCmd = docker.createContainerCmd(script.getDockerImage())
+                .withNetworkDisabled(!script.getAllowNetworkAccess())
+                .withHostConfig(hostConfig)
+                .withCmd(command.toArray(new String[0]));
             if (script.getTimeoutSecs() != null && script.getTimeoutSecs().longValue() > 0) {
-                builder = builder.add("StopTimeout", script.getTimeoutSecs().longValue());
+                createContainerCmd.withStopTimeout(script.getTimeoutSecs().intValue());
             }
-            JsonObject config = builder.build();
-            StringWriter configWriter = new StringWriter();
-            Json.createWriter(configWriter).writeObject(config);
-            myLogger.debug("Container config:\n" + configWriter.getBuffer().toString());
-            container = docker.containers().create(config);
-            containerName = container.containerId();
+            CreateContainerResponse container = createContainerCmd.exec();
+            containerName = container.getId();
 
             myLogger.debug("Created container: " + containerName);
 
-            container.start();
+            docker.startContainerCmd(containerName).exec();
 
             myLogger.debug("Started container: " + containerName);
             // Wait until the container stops, then collect its output
-            container.waitOn("not-running");
+            Integer exitCode = docker.waitContainerCmd(containerName)
+                .exec(new WaitContainerResultCallback())
+                .awaitStatusCode();
+            myLogger.debug("Exit code: " + exitCode);
+            result.setExitCode(exitCode);
 
-            try {
-                JsonObject status = container.inspect();
-                if (status !=  null) {
-                    int exitCode = status.getJsonObject("State").getInt("ExitCode");
-                    myLogger.debug("Exit code: " + exitCode);
-                    result.setExitCode(exitCode);
-                }
-            }
-            catch (ClassCastException e) {
-                myLogger.warn("Unable to get exit code from Docker container");
-            }
-
-
-            stdout = container.logs().stdout().fetch();
+            stdout = fetchContainerLogs(containerName, true);
             myLogger.debug("Output:\n" + stdout);
 
             /*
@@ -318,7 +311,7 @@ public class RunnableScript implements Runnable {
                 // If we can't read that value, just continue
             }
 
-            String stderr = container.logs().stderr().fetch();
+            String stderr = fetchContainerLogs(containerName, false);
             if (!stderr.isEmpty()) {
                 result.setStderr(stderr);
                 myLogger.warn("Stderr:\n" + stderr);
@@ -336,17 +329,20 @@ public class RunnableScript implements Runnable {
             result.setStdout(stdout);
 
         }
-        catch (IOException | BagReaderException e) {
+        catch (IOException | BagReaderException | DockerException | InterruptedException e) {
             myLogger.error("IO Exception:", e);
             result.setErrorMessage(e.getLocalizedMessage());
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
         }
         finally {
             if (containerName != null) {
                 myLogger.debug("Removing container: " + containerName);
                 try {
-                    container.remove();
+                    docker.removeContainerCmd(containerName).withForce(true).exec();
                 }
-                catch (IOException e) {
+                catch (DockerException e) {
                     myLogger.error("Failed to remove container", e);
                 }
             }
@@ -356,6 +352,7 @@ public class RunnableScript implements Runnable {
             for (BagWrapper wrapper : bagWrappers) {
                 IOUtils.closeQuietly(wrapper);
             }
+            IOUtils.closeQuietly(docker);
         }
 
         long stopTime = System.currentTimeMillis();
@@ -374,5 +371,23 @@ public class RunnableScript implements Runnable {
             result.getBags().add(bag);
         }
         resultRepository.save(result);
+    }
+
+    private String fetchContainerLogs(String containerName, boolean stdout) throws InterruptedException {
+        StringBuilder logs = new StringBuilder();
+        LogContainerResultCallback callback = new LogContainerResultCallback() {
+            @Override
+            public void onNext(Frame item) {
+                logs.append(new String(item.getPayload(), StandardCharsets.UTF_8));
+            }
+        };
+
+        docker.logContainerCmd(containerName)
+            .withStdOut(stdout)
+            .withStdErr(!stdout)
+            .exec(callback)
+            .awaitCompletion();
+
+        return logs.toString();
     }
 }
