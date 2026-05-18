@@ -1,0 +1,36 @@
+!com.github.swrirobotics.support.web.Configuration
+adminPassword: random_bagdb_password
+dockerHost: http://docker:2375
+driver: org.postgresql.Driver
+gpsTopics:
+    - /localization/gps
+    - gps
+    - /vehicle/gps/fix
+    - /localization/sensors/gps/novatel/raw
+    - /localization/sensors/gps/novatel/fix
+    - /imu_3dm_node/gps/fix
+    - /local_xy_origin
+jdbcPassword: random_postgres_password
+jdbcUrl: jdbc:postgresql://postgres/bag_database
+jdbcUsername: bag_database
+ldapBindDn: cn=admin,dc=example,dc=com
+ldapBindPassword: random_ldap_password
+ldapSearchBase: ou=People,dc=example,dc=com
+ldapServer: ldap://openldap
+ldapUserPattern: uid={0},ou=People,dc=example,dc=com
+metadataTopics:
+    - /metadata
+openWithUrls:
+    'Webviz':
+        - 'https://bagdb.example.com/webviz/?'
+        - 'remote-bag-url'
+scriptTmpPath: /scripts
+vehicleNameTopics:
+    - /vms/vehicle_name
+    - /vehicle_name
+storageConfigurations:
+    - !com.github.swrirobotics.bags.storage.filesystem.FilesystemBagStorageConfigImpl
+        storageId: default
+        basePath: /bags
+        isLocal: true
+        dockerPath: /bags

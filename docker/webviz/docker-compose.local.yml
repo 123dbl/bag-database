@@ -1,0 +1,6 @@
+services:
+    bagdb:
+        image: bag-database:local
+        build:
+            context: ../../
+            dockerfile: docker/build/Dockerfile

@@ -1,4 +1,3 @@
-version: '3.6'
 services:
     reverse-proxy:
         image: traefik:v2.2
@@ -12,7 +11,7 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock
     docker:
         image: docker:dind
-        privileged: yes
+        privileged: true
         networks:
             - bagdb
         volumes:

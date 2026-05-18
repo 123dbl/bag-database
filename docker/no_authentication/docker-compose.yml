@@ -1,8 +1,7 @@
-version: '3.6'
 services:
     docker:
         image: docker:dind
-        privileged: yes
+        privileged: true
         networks:
             - bagdb
         volumes:

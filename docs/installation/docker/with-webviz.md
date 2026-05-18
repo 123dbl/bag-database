@@ -19,12 +19,47 @@ This Bag Database will:
 - Automatically generate a signed SSL certificate for `bagdb.example.com` through [Let's Encrypt](https://letsencrypt.org/)
 - Use the self-hosted Webviz instance for opening bag files
 
-To make the docker-compose.yml file a bit cleaner, environment variables for many of the containers have been pulled out into separate files. These configuration files, and the associated Docker compose file, are located [here](../../../docker/webviz/). All of these files should be saved in the same directory, and if you are going to run a server based on them, make sure you edit them to add your own passwords, domain name, and user information.
+The three core services are:
+
+- `postgres`: PostGIS database
+- `bagdb`: Spring Boot web application that serves the UI and REST API
+- `webviz`: self-hosted Webviz visualization UI
+
+The Compose stack also includes support services:
+
+- `traefik`: reverse proxy and TLS termination
+- `docker`: Docker-in-Docker service used when Bag Database runs scripts
+- `openldap`: LDAP server for this authentication example
+
+The configuration files and Compose files are located [here](../../../docker/webviz/).
+Edit them before running a real server so the passwords, domain name, e-mail
+address, LDAP settings, and bag storage paths match your environment.
+
+## Start
+
+To run with the published Bag Database image:
+
+```bash
+docker compose -f docker/webviz/docker-compose.yml up -d
+```
+
+To build and run the local source tree instead:
+
+```bash
+docker compose \
+  -f docker/webviz/docker-compose.yml \
+  -f docker/webviz/docker-compose.local.yml \
+  up --build -d
+```
+
+The Traefik rules in this example use `bagdb.example.com`. Change that domain in
+`docker-compose.yml` and `settings.yml`, or map it to your local machine while
+testing.
 
 ## Configuration Files
 
-- [bagdb.env](https://github.com/swri-robotics/bag-database/blob/master/docker/webviz/bagdb.env)
-  - Environment variables for the Bag Database, such as importantant ROS topics, server connections, etc.
+- [settings.yml](https://github.com/swri-robotics/bag-database/blob/master/docker/webviz/settings.yml)
+  - Main Bag Database configuration, including database credentials, LDAP settings, ROS topics, storage configuration, and the Webviz "Open With" URL.
 - [openldap.env](https://github.com/swri-robotics/bag-database/blob/master/docker/webviz/openldap.env)
    -  Environment variables for the LDAP server.
 - [postgres.env](https://github.com/swri-robotics/bag-database/blob/master/docker/webviz/postgres.env)
@@ -33,8 +68,10 @@ To make the docker-compose.yml file a bit cleaner, environment variables for man
   - A custom configuration file for the Webviz's nginx server.
   - Change the ```location``` variable here because it will be running under an alias at ```/webviz``` in our reverse proxy.
 - [docker-compose.yml](https://github.com/swri-robotics/bag-database/blob/master/docker/webviz/docker-compose.yml)
-  - Main docker-compose.yml file. If everything is configured correctly, the system can be started with ```docker-compose up -d```
+  - Main docker-compose.yml file. If everything is configured correctly, the system can be started with `docker compose -f docker/webviz/docker-compose.yml up -d`.
   - After everything is running, you will be able to access the server at `https://bagdb.example.com`.
+- [docker-compose.local.yml](https://github.com/swri-robotics/bag-database/blob/master/docker/webviz/docker-compose.local.yml)
+  - Optional override that builds the local source tree as `bag-database:local`.
 - [people.ldif](https://github.com/swri-robotics/bag-database/blob/master/docker/webviz/people.ldif)
   - An example LDIF file for creating a "People" group in your LDAP server.
   - After starting the server, run
