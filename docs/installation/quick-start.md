@@ -131,6 +131,30 @@ run:
 docker compose -f docker/build/docker-compose.yml up --build
 ```
 
+For the Webviz Compose stack, build the Bag Database image from this checkout
+and start the supporting services with:
+
+```bash
+docker compose \
+  -f docker/webviz/docker-compose.yml \
+  -f docker/webviz/docker-compose.local.yml \
+  up --build -d
+```
+
+Open the Bag Database management page directly at:
+
+```text
+http://localhost:8081/
+```
+
+The Traefik route also works when `bagdb.example.com` resolves to your local
+machine:
+
+```text
+https://bagdb.example.com/
+https://bagdb.example.com/webviz/
+```
+
 ## Useful Links
 
 - [Configuration](../configuration/)
