@@ -266,7 +266,7 @@ public class BagControllerTest extends WebAppConfigurationAware {
         .andDo(document("bags/{method-name}",
             preprocessRequest(prettyPrint()),
             preprocessResponse(prettyPrint()),
-            requestParameters(
+            queryParameters(
                 parameterWithName("bagId").description("Database ID of the bag to download")
             ),
             responseFields(
@@ -288,7 +288,7 @@ public class BagControllerTest extends WebAppConfigurationAware {
         .andDo(document("bags/{method-name}",
             preprocessRequest(prettyPrint()),
             preprocessResponse(prettyPrint()),
-            requestParameters(
+            queryParameters(
                 parameterWithName("bagId").description("Database ID of the bag to retrieve an image from"),
                 parameterWithName("topic").description("Name of the image topic"),
                 parameterWithName("index").description("Index of the message to retrieve on the message topic; note " +
@@ -316,7 +316,7 @@ public class BagControllerTest extends WebAppConfigurationAware {
                 headerWithName("Range").description("The HTTP Range header describing a range of bytes to return.  " +
                     "If omitted, the entire file will be returned.").optional()
             ),
-            requestParameters(
+            queryParameters(
                 parameterWithName("bagId").description("The database ID of the bag file to download")
             )));
     }
@@ -383,7 +383,7 @@ public class BagControllerTest extends WebAppConfigurationAware {
                 requestParts(
                     partWithName("file").description("The bag file to upload")
                 ),
-                requestParameters(
+                formParameters(
                     parameterWithName("targetDirectory").description("Location to place the bag file on disk"),
                     parameterWithName("storageId").description("ID of the storage backend that should store the bag file; default: \"default\"").optional(),
                     parameterWithName("_csrf").description("CSRF token supplied by the Bag Database")
@@ -424,7 +424,7 @@ public class BagControllerTest extends WebAppConfigurationAware {
         .andDo(document("bags/{method-name}",
             preprocessRequest(prettyPrint()),
             preprocessResponse(prettyPrint()),
-            requestParameters(
+            queryParameters(
                 parameterWithName("text").description("Text to search for in selected fields; will match if any of " +
                     "the selected fields include this string anywhere in their contents.  leave empty to not do a " +
                     "text search"),
@@ -466,7 +466,7 @@ public class BagControllerTest extends WebAppConfigurationAware {
         .andDo(document("bags/{method-name}",
             preprocessRequest(prettyPrint()),
             preprocessResponse(prettyPrint()),
-            requestParameters(
+            queryParameters(
                 parameterWithName("bagId").description("Database ID of the bag to get tags for")
             ),
             responseFields().andWithPrefix("[].", getTagsFields())
@@ -485,7 +485,7 @@ public class BagControllerTest extends WebAppConfigurationAware {
             .andDo(document("bags/{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                requestParameters(
+                formParameters(
                     parameterWithName("tagName").description("Tag name"),
                     parameterWithName("value").description("Tag value"),
                     parameterWithName("bagId").description("Database ID of the bag to tag"),
@@ -505,7 +505,7 @@ public class BagControllerTest extends WebAppConfigurationAware {
             .andDo(document("bags/{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                requestParameters(
+                formParameters(
                     parameterWithName("tagName").description("Tag name"),
                     parameterWithName("value").description("Tag value"),
                     parameterWithName("bagIds").description("Database IDs of the bags to tag"),
@@ -523,7 +523,7 @@ public class BagControllerTest extends WebAppConfigurationAware {
             .andDo(document("bags/{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                requestParameters(
+                formParameters(
                     parameterWithName("tagNames").description("Tag names to remove"),
                     parameterWithName("bagId").description("Database ID of the bag to remove tags from"),
                     parameterWithName("_csrf").description("CSRF token supplied by the Bag Database")
@@ -550,7 +550,7 @@ public class BagControllerTest extends WebAppConfigurationAware {
         .andDo(document("bags/{method-name}",
             preprocessRequest(prettyPrint()),
             preprocessResponse(prettyPrint()),
-            requestParameters(
+            queryParameters(
                 parameterWithName("bagIds").description("Database IDs of bags to get GPS coordinates for")
             ),
             responseFields(

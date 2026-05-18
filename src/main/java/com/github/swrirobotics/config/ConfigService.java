@@ -122,6 +122,14 @@ public class ConfigService {
 
     @Secured("ROLE_ADMIN")
     public void setConfiguration(Configuration config) throws IOException {
+        setConfiguration(config, true);
+    }
+
+    public void setConfigurationFromStartup(Configuration config) throws IOException {
+        setConfiguration(config, false);
+    }
+
+    private void setConfiguration(Configuration config, boolean notifyBagScanner) throws IOException {
         URL fileUrl;
         try {
             fileUrl = new URL(filename);
@@ -165,7 +173,7 @@ public class ConfigService {
             }
         }
 
-        if (bagPathChanged) {
+        if (notifyBagScanner && bagPathChanged) {
             myLogger.warn("Setting the bagPath config parameter is deprecated.");
             myLogger.warn("Please configure a storage backend instead.");
             // If the bag path has changed, we should tell the scanner to rescan.

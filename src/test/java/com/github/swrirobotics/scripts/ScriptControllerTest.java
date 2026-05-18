@@ -55,7 +55,8 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.formParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -158,7 +159,7 @@ public class ScriptControllerTest extends WebAppConfigurationAware {
             .andDo(document("scripts/{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                requestParameters(
+                queryParameters(
                     parameterWithName("runUuid").description("The Run UUID of the result to retrieve")
                 ),
                 responseFields(
@@ -205,7 +206,7 @@ public class ScriptControllerTest extends WebAppConfigurationAware {
             .andDo(document("scripts/{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                requestParameters(
+                formParameters(
                     parameterWithName("scriptId").description("Database ID of the script to run"),
                     parameterWithName("bagIds").description("List of database IDs of bags to submit to the script"),
                     parameterWithName("_csrf").description("CSRF token supplied by the Bag Database")

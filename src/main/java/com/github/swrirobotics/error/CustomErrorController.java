@@ -46,7 +46,7 @@ class CustomErrorController {
     /**
      * Display the Boot-managed error page.
      */
-    @RequestMapping("generalError")    
+    @RequestMapping("generalError")
     public String generalError(HttpServletRequest request, HttpServletResponse response, Model model) {
         // retrieve some useful information from the request
         Integer statusCode = (Integer) request.getAttribute("jakarta.servlet.error.status_code");

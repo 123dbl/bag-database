@@ -94,7 +94,7 @@ public class AdminController {
                             myLogger.info("Setting admin password from config file.");
                             config.setAdminPassword("");
                             try {
-                                myConfigService.setConfiguration(config);
+                                myConfigService.setConfigurationFromStartup(config);
                             }
                             catch (IOException e) {
                                 myLogger.error("Error setting configuration", e);

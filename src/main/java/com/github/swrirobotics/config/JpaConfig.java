@@ -32,6 +32,7 @@ package com.github.swrirobotics.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl;
 import org.h2gis.functions.factory.H2GISDBFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,10 @@ public class JpaConfig {
     @Bean
     @Profile("!test")
     public HibernatePropertiesCustomizer hibernatePropertiesCustomizer() {
-        return hibernateProperties -> hibernateProperties.put("hibernate.dialect", hibernateDialect());
+        return hibernateProperties -> {
+            hibernateProperties.put("hibernate.dialect", hibernateDialect());
+            hibernateProperties.put("hibernate.physical_naming_strategy", PhysicalNamingStrategyStandardImpl.INSTANCE);
+        };
     }
 
     @Bean

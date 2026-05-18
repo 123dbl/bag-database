@@ -33,12 +33,14 @@ package com.github.swrirobotics.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.config.SimpleBrokerRegistration;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.session.Session;
 import org.springframework.session.web.socket.config.annotation.AbstractSessionWebSocketMessageBrokerConfigurer;
 import org.springframework.session.web.socket.server.SessionRepositoryMessageInterceptor;
@@ -48,25 +50,30 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 @Configuration
 @EnableScheduling
 @EnableWebSocketMessageBroker
-public class WebSocketConfig extends AbstractSessionWebSocketMessageBrokerConfigurer<Session> {
+public class WebSocketConfig extends AbstractSessionWebSocketMessageBrokerConfigurer<Session> implements SchedulingConfigurer {
     private final Logger myLogger = LoggerFactory.getLogger(WebSocketConfig.class);
 
-    @Autowired
-    private TaskScheduler myScheduler;
+    @Bean
+    public ThreadPoolTaskScheduler webSocketTaskScheduler() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(1);
+        scheduler.setThreadNamePrefix("websocket-heartbeat-");
+        return scheduler;
+    }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         myLogger.info("Configuring message broker.");
         SimpleBrokerRegistration broker = config.enableSimpleBroker("/topic");
-        if (myScheduler != null) {
-            myLogger.info("Enabling task scheduling.");
-            broker.setTaskScheduler(myScheduler);
-        }
-        else {
-            myLogger.warn("No task scheduler available.");
-        }
+        myLogger.info("Enabling task scheduling.");
+        broker.setTaskScheduler(webSocketTaskScheduler());
         config.setApplicationDestinationPrefixes("/app");
 
+    }
+
+    @Override
+    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+        taskRegistrar.setScheduler(webSocketTaskScheduler());
     }
 
     @Override

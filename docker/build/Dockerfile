@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 FROM maven:3.9-eclipse-temurin-17 AS base-layer
 
 LABEL maintainer="david.anthony@swri.org"
@@ -7,10 +8,11 @@ LABEL author="P.J. Reed"
 # to have the maven build environment in it.
 
 WORKDIR /app
+ARG MAVEN_CLI_OPTS="-e -B -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.wagon.http.pool=false"
 COPY pom.xml .
-RUN mvn -e -B dependency:resolve
+RUN --mount=type=cache,target=/root/.m2 mvn ${MAVEN_CLI_OPTS} dependency:resolve
 COPY src ./src
-RUN mvn -e -B package
+RUN --mount=type=cache,target=/root/.m2 mvn ${MAVEN_CLI_OPTS} -DskipTests package
 
 FROM eclipse-temurin:17-jre
 

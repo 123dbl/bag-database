@@ -192,7 +192,7 @@ public class BagController {
                     myLogger.error("Error reading bag file:", e);
                 }
             };
-            return new ResponseEntity<>(stream, HttpStatus.OK);
+            return ResponseEntity.ok(stream);
         }
         catch (IOException e) {
             myLogger.error("Error getting video stream:", e);
@@ -200,7 +200,7 @@ public class BagController {
         finally {
             myLogger.info("Finished getVideo()");
         }
-        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
     @RequestMapping(value = "/update",

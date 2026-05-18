@@ -299,7 +299,6 @@ public class Bag implements Serializable {
         this.location = location;
     }
 
-    @Column(name = "latitudeDeg")
     @Formula("ST_Y(coordinate)")
     public Double getLatitudeDeg() {
         return latitudeDeg;
@@ -318,7 +317,6 @@ public class Bag implements Serializable {
         this.coordinate = coordinate;
     }
 
-    @Column(name = "longitudeDeg")
     @Formula("ST_X(coordinate)")
     public Double getLongitudeDeg() {
         return longitudeDeg;

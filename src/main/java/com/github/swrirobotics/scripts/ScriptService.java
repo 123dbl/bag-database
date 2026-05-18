@@ -32,7 +32,7 @@ package com.github.swrirobotics.scripts;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import com.github.swrirobotics.bags.NonexistentBagException;
@@ -482,9 +482,7 @@ public class ScriptService extends StatusProvider {
             .dockerHost(dockerConfig.getDockerHost())
             .sslConfig(dockerConfig.getSSLConfig())
             .build();
-        return DockerClientBuilder.getInstance(dockerConfig)
-            .withDockerHttpClient(httpClient)
-            .build();
+        return DockerClientImpl.getInstance(dockerConfig, httpClient);
     }
 
     @Override
