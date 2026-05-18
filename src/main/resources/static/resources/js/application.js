@@ -40,8 +40,8 @@ function startApplication() {
     });
 }
 
-if (!bagGridDateRenderer) {
-    bagGridDateRenderer = Ext.util.Format.dateRenderer('n/j/Y H:i:s');
+if (typeof window.bagGridDateRenderer !== 'function') {
+    window.bagGridDateRenderer = Ext.util.Format.dateRenderer('n/j/Y H:i:s');
 }
 
 Ext.onReady(function() {
