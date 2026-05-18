@@ -14,8 +14,8 @@ the local filesystem, see [Configuration](configuration.md).
 
 The Bag Database can also be configured to index files in multiple local directories or S3-compatible
 storage buckets, in which case you will need to create a custom `settings.yml` file.  This file
-should be mounted at `${HOME}/.ros-bag-database/settings.yml` inside the Docker container, or outside
-the container in the Tomcat user's home directory if running as a standalone Tomcat server.
+should be mounted at `${HOME}/.ros-bag-database/settings.yml` inside the Docker container, or
+passed with `bag-database.settings-location` when running the executable JAR.
 
 Storage backends are configured by adding a `storageConfigurations` key to the `settings.yml` file
 that contains a list of serialized YAML configuration objects.  Each of these objects maps to a

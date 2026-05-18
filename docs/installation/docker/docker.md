@@ -2,7 +2,7 @@
 layout: default
 title: Docker
 parent: Installation
-nav_order: 1
+nav_order: 2
 has_children: true
 description: "Installing with Docker"
 permalink: /installation/docker/
@@ -25,15 +25,21 @@ volumes and parameters that can be used to configure the Docker container.
 | Volume | Description |
 | ------ | ----------- |
 | `/bags` | Will be monitored for bag files. |
-| `/usr/local/tomcat/logs` | Where Tomcat places its log files. |
+| `/logs` | Optional location for file-based logs if your deployment config writes them. |
 | `/root/.ros-bag-database/indexes` | Where the Bag Database stores its Elasticsearch indexes. |
+| `/root/.ros-bag-database/settings.yml` | Main application configuration file. |
 
 ### Environment Variables
 
-With the exception of `BAGDB_PATH`, all of these variables are used in the Bag Database container's
-`entrypoint.sh` script to generate a file at `${HOME}/.ros-bag-database/settings.yml` that configures
-the Bag Database.  You can generate this file yourself if you have more complex configuration needs;
-see [Storage](../../configuration/storage.md) for an example.
+The current Spring Boot image reads `settings.yml` directly. Mount it at
+`/root/.ros-bag-database/settings.yml`, or pass
+`--bag-database.settings-location=file:/path/to/settings.yml` as a container
+argument.
+
+The variables below are retained for older Compose templates or wrapper scripts
+that generate `settings.yml`. The application itself does not read them directly.
+For new deployments, prefer an explicit settings file; see
+[Quick Start](../quick-start) and [Storage](../../configuration/storage.md).
 
 | Variable | Description | Default |
 | -------- | ----------- | ------- |

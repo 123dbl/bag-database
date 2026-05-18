@@ -14,6 +14,15 @@ Sometimes it is convenient for using a locally built version of the Bag Database
 
 To build the bag database from the local source folder, simple run
 
-```docker-compose -f docker/build/docker-compose.yml up```
+```bash
+docker compose -f docker/build/docker-compose.yml up --build
+```
 
 from the root repository of this repository. Note that it is important to do it from the root of the repository because of the context used in the Docker Compose file and the relative file paths accessed in the Dockerfile.
+
+The current image reads `settings.yml` directly. For the most direct local
+workflow, see [Quick Start](../quick-start), which shows how to build the image
+and mount `${HOME}/.ros-bag-database/settings.yml`.
+
+This Compose example mounts `docker/build/settings.yml` into the container. Edit
+that file for your database, bag directory, Docker host, and topic settings.

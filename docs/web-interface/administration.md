@@ -15,9 +15,9 @@ Administration and Configuration panel.
 ![Navigation Login Menu](../assets/images/navigation_login.png)
 
 Clicking on that options will present you with a window requesting an admin password.
-This may be have been set through an environment variable when starting your Docker container,
-or, if none was set, one will be randomly generated and printed in the log file when the
-Bag Database is starting up.
+This may have been set with `adminPassword` in `settings.yml`, or, if none was
+set, one will be randomly generated and printed in the log file when the Bag
+Database is starting up.
 
 ![Admin password](../assets/images/admin_login.png)
 
@@ -81,10 +81,11 @@ Changes the admin password.
 ## Bag Database Configuration
 
 This panel can be used to view or modify various configuration options for the Bag Database.
-This is only useful for modifying the configuration if you are running the Bag Database
-in a standalone Tomcat server; if you are running it using the Docker image, these values
-will be overwritten every time the container starts based on its environment variables.
+This is useful when the application can write to `settings.yml`. If your Docker
+deployment mounts that file read-only, edit the file outside the application and
+restart the container.
 
 ![Bag Database Configuration](../assets/images/configuration.png)
 
-Detailed information about what each value does is available in [Docker](../installation/docker).
+Detailed information about what each value does is available in
+[Configuration](../configuration/).

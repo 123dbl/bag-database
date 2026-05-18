@@ -12,6 +12,11 @@ permalink: /installation/docker/without-authentication
 
 If you are on an internal network and you trust the users who can access the server, the simplest way to set up a Bag Database is so that authentication is not required using [Docker compose](https://docs.docker.com/compose/). This method will pull the latest images of the software from the GitHub Docker registry (ghcr.io).
 
+For the current Spring Boot image, start with [Quick Start](../quick-start) and
+mount an explicit `settings.yml` file. Older Compose examples may still show
+environment variables that were previously used by an entrypoint script to
+generate that file.
+
 Here's an example [docker-compose.yml](https://github.com/swri-robotics/bag-database/blob/master/docker/no_authentication/docker-compose.yml) file; this one will run:
 - The Bag Database
 - A PostGIS database server

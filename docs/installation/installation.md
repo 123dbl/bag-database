@@ -9,8 +9,12 @@ permalink: /installation/
 
 # Installation
 
-The Bag Database can be set up in multiple different ways depending on what functionality you
-need; the pages in this category have a variety of examples that you can customize.
+The current Bag Database application is packaged as a Spring Boot executable JAR.
+For the normal build, configuration, and Docker workflow, start with
+[Quick Start](quick-start).
 
-If you just want to get something up and running quickly to test it out, I recommend looking at
-[Without Authentication](docker/without-authentication) first.
+The Bag Database can also be set up in multiple different ways depending on what
+functionality you need; the pages in this category have examples that you can
+customize. Some older Docker examples still show environment-variable based
+configuration. With the current application, the recommended approach is to
+mount or pass a `settings.yml` file.

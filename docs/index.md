@@ -14,6 +14,9 @@ The Bag Database is a web-based application that monitors a directory for ROS ba
 files, parses their metadata, and provides a friendly web interface for searching 
 for bags, downloading them, and doing post-processing on them.
 
+For the current Spring Boot application, start with the
+[Quick Start](installation/quick-start) page. It covers building the JAR,
+creating `settings.yml`, running locally, and running the Docker image.
 
 ![Sample Screenshot](assets/images/bag-database.png)
 

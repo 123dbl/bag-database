@@ -1,0 +1,27 @@
+!com.github.swrirobotics.support.web.Configuration
+adminPassword: letmein
+dockerHost: http://docker:2375
+driver: org.postgresql.Driver
+gpsTopics:
+    - /localization/gps
+    - gps
+    - /vehicle/gps/fix
+    - /localization/sensors/gps/novatel/raw
+    - /localization/sensors/gps/novatel/fix
+    - /imu_3dm_node/gps/fix
+    - /local_xy_origin
+jdbcPassword: letmein
+jdbcUrl: jdbc:postgresql://postgres/bag_database
+jdbcUsername: bag_database
+metadataTopics:
+    - /metadata
+scriptTmpPath: /scripts
+vehicleNameTopics:
+    - /vms/vehicle_name
+    - /vehicle_name
+storageConfigurations:
+    - !com.github.swrirobotics.bags.storage.filesystem.FilesystemBagStorageConfigImpl
+        storageId: default
+        basePath: /bags
+        isLocal: true
+        dockerPath: /bags

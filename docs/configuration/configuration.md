@@ -10,17 +10,17 @@ permalink: /configuration/
 # Configuration
 
 The Bag Database stores its configuration in a file at `${HOME}/.ros-bag-database/settings.yml`,
-where `${HOME}` is the home directory of the user that the Tomcat server is running as.
+where `${HOME}` is the home directory of the process running the Spring Boot application.
+In the Docker image, this defaults to `/root/.ros-bag-database/settings.yml`.
 
-If you are only serving files from a single directory on the local filesystem, you don't need to
-edit this file; it will be automatically generated from the environment variables set on the container.
+You can use Spring Boot's `bag-database.settings-location` property to point the
+application at another file. The value must be a URL, for example
+`file:/etc/bag-database/settings.yml`.
 
-For more complex storage configuration, you can make your own `settings.yml` file.  See below for an
-example, or if you have an existing Bag Database, you can use its current configuration as a starting
+Create your own `settings.yml` file for persistent database credentials, storage
+backends, map settings, LDAP settings, and script execution paths. If you have
+an existing Bag Database, you can use its current configuration as a starting
 point by copying `/root/.ros-bag-database/settings.yml` out of the container.
-
-For a detailed list of the environment variables used to configure the Bag Database when it is
-running as a Docker container, see [Docker](../installation/docker).
 
 ## File Format
 
@@ -38,7 +38,7 @@ gpsTopics:
 - /localization/sensors/gps/novatel/fix
 - /imu_3dm_node/gps/fix
 - /local_xy_origin
-scriptTmpPath: "/var/lib/tomcat9/bagdb_scripts/"
+scriptTmpPath: /scripts
 jdbcPassword: letmein
 jdbcUrl: jdbc:postgresql://localhost/bag_database
 jdbcUsername: bag_database
@@ -63,7 +63,7 @@ vehicleNameTopics:
 
 
 
-If you are running the Bag Database in a standalone Tomcat server, some of these values can be edited
-through the [Configuration](../web-interface/administration#bag-database-configuration)
-panel.  Note that if you are running inside a Docker container, they will be overwritten when the
-container restarts.
+Some of these values can be edited through the
+[Configuration](../web-interface/administration#bag-database-configuration)
+panel when the application can write to `settings.yml`. If your deployment mounts
+the file read-only, edit the file outside the application and restart.

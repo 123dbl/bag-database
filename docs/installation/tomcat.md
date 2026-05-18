@@ -1,23 +1,32 @@
 ---
 layout: default
-title: Tomcat
+title: Legacy Tomcat
 parent: Installation
-nav_order: 2
-description: "Running the Bag Database as a Tomcat webapp"
+nav_order: 99
+description: "Legacy Tomcat deployment notes"
 permalink: /installation/tomcat
 ---
 
-# Running in a Tomcat Server
+# Legacy Tomcat Deployment
+
+The current Bag Database architecture is a Spring Boot executable JAR and no
+longer builds a WAR by default. Use [Quick Start](quick-start) for the supported
+build and run workflow.
+
+These notes are retained for older deployments that still use the legacy WAR
+build.
 
 ## Building
 
-The bag database is a Spring-based web application that requires Java 11 or later
-and has been tested in Tomcat 9.
+The legacy bag database web application requires Java 11 or later and has been
+tested in Tomcat 9.
 
-To compile it, you need JDK 11.0 or later and Maven 3.0.5 or later.  To build a
-WAR package, run:
+To compile the legacy build, you need JDK 11.0 or later and Maven 3.0.5 or
+later. To build a WAR package, run:
 
-`mvn package`
+```bash
+mvn -f pom.legacy.xml package
+```
 
 This will produce a WAR file that is suitable for deploying to a Tomcat 9 application
 server.
