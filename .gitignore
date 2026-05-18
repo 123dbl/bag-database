@@ -5,6 +5,7 @@ catalina.*/
 target/
 indexes/
 .idea/
+.vscode/
 *.log.zip
 *.tmp
 
