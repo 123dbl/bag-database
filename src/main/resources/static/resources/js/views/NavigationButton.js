@@ -28,6 +28,15 @@
 //
 // *****************************************************************************
 
+function openBagDatabaseApiDocumentation() {
+    window.open("resources/docs/index.html", "_blank");
+}
+
+function showBagDatabaseAboutWindow() {
+    var win = Ext.create('BagDatabase.views.AboutWindow');
+    win.show();
+}
+
 Ext.define('BagDatabase.views.NavigationButton', {
     extend: 'Ext.button.Split',
     alias: 'widget.navigationButton',
@@ -42,12 +51,11 @@ Ext.define('BagDatabase.views.NavigationButton', {
     },
     menu: [{
         text: 'About', iconCls: 'information-icon', handler: function() {
-            var win = Ext.create('BagDatabase.views.AboutWindow');
-            win.show();
+            showBagDatabaseAboutWindow();
         }
     }, {
         text: 'API Documentation', iconCls: 'book-icon', handler: function() {
-            window.open("resources/docs/index.html", "_blank");
+            openBagDatabaseApiDocumentation();
         }
     }],
     initComponent: function() {

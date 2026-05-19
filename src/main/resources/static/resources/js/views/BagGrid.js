@@ -334,12 +334,11 @@ Ext.define('BagDatabase.views.BagGrid', {
             },
             menu: [{
                 text: 'About', iconCls: 'information-icon', handler: function() {
-                    var win = Ext.create('BagDatabase.views.AboutWindow');
-                    win.show();
+                    showBagDatabaseAboutWindow();
                 }
             }, {
                 text: 'API Documentation', iconCls: 'book-icon', handler: function() {
-                    window.open("resources/docs/index.html", "_blank");
+                    openBagDatabaseApiDocumentation();
                 }
             }]
         }]

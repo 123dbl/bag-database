@@ -30,17 +30,21 @@
 
 Ext.define('BagDatabase.views.AboutWindow', {
     extend: 'Ext.window.Window',
-    alias: 'widgets.aboutWindow',
+    alias: 'widget.aboutWindow',
     title: 'About',
     layout: 'fit',
-    bodyPadding: 5,
+    width: 520,
+    bodyPadding: 10,
     constrainHeader: true,
-    html: "<h2>Bag Database 3.4.2</h2>" +
-        "<p>Documentation: <a href='https://swri-robotics.github.io/bag-database/'>https://swri-robotics.github.io/bag-database/</a></p>" +
-        "<p>Source Code: <a href='https://github.com/swri-robotics/bag-database'>https://github.com/swri-robotics/bag-database</a></p>" +
+    html: "<h2>Bag Database 4.0.0-SNAPSHOT</h2>" +
+        "<p>A web application for cataloging, searching, uploading, and visualizing ROS bag files.</p>" +
+        "<p>This build uses the refactored Spring Boot 4 / Java 17 application architecture.</p>" +
+        "<p>Documentation: <a target='_blank' rel='noopener noreferrer' href='https://swri-robotics.github.io/bag-database/'>https://swri-robotics.github.io/bag-database/</a></p>" +
+        "<p>API Documentation: <a target='_blank' rel='noopener noreferrer' href='resources/docs/index.html'>resources/docs/index.html</a></p>" +
+        "<p>Source Code: <a target='_blank' rel='noopener noreferrer' href='https://github.com/swri-robotics/bag-database'>https://github.com/swri-robotics/bag-database</a></p>" +
         "<p>Copyright 2015-2020 Southwest Research Institute</p>" +
         "<br>" +
-        "<p>Icons provided by <a href='http://www.famfamfam.com/lab/icons/silk/'>http://www.famfamfam.com/lab/icons/silk/</a></p>" +
+        "<p>Icons provided by <a target='_blank' rel='noopener noreferrer' href='http://www.famfamfam.com/lab/icons/silk/'>http://www.famfamfam.com/lab/icons/silk/</a></p>" +
         "<p>A number of open source libraries were used in the creation of this software;<br>" +
         "consult the documentation in the source repository for a full list of attributions.</p>"
 });

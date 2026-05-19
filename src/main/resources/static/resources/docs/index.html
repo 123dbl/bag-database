@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bag Database API Documentation</title>
+    <style>
+        body {
+            color: #1f2933;
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.5;
+            margin: 0;
+            background: #f6f8fb;
+        }
+
+        main {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 32px 28px 48px;
+            background: #fff;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin: 0 0 8px;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-top: 28px;
+            border-bottom: 1px solid #d9e2ec;
+            padding-bottom: 6px;
+        }
+
+        code,
+        pre {
+            font-family: Consolas, Monaco, "Courier New", monospace;
+        }
+
+        pre {
+            overflow: auto;
+            background: #102a43;
+            color: #f0f4f8;
+            padding: 14px;
+            border-radius: 4px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid #d9e2ec;
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f0f4f8;
+        }
+
+        a {
+            color: #0b69a3;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Bag Database API Documentation</h1>
+    <p>
+        This page is bundled with the application so the Navigation menu always has a working
+        API documentation target. Full Spring REST Docs output may replace this file in builds
+        that run the documentation generation phase.
+    </p>
+    <p>
+        The public documentation site is available at
+        <a href="https://swri-robotics.github.io/bag-database/rest-api/" target="_blank" rel="noopener noreferrer">
+            https://swri-robotics.github.io/bag-database/rest-api/
+        </a>.
+    </p>
+
+    <h2>Authentication</h2>
+    <p>
+        If LDAP or admin authentication is enabled, establish a session before calling API
+        endpoints. POST requests must include a valid CSRF token.
+    </p>
+    <pre><code>URL=http://localhost:8081
+CSRF=$(curl -s -L -c cookies.txt "$URL/" \
+    | sed -rn 's/^.*(value=|csrfToken = )"([-a-zA-Z0-9_-]*)".*$/\2/p')
+
+curl -s -L -b cookies.txt -c cookies.txt \
+    -F "username=admin" \
+    -F "password=change-me" \
+    -F "_csrf=$CSRF" \
+    "$URL/ldap_login"</code></pre>
+
+    <h2>Bag Endpoints</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Endpoint</th>
+            <th>Method</th>
+            <th>Purpose</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>/bags/search</code></td>
+            <td>GET</td>
+            <td>Search bags by text, filters, pagination, and sort order.</td>
+        </tr>
+        <tr>
+            <td><code>/bags/get</code></td>
+            <td>GET</td>
+            <td>Fetch one bag by database id.</td>
+        </tr>
+        <tr>
+            <td><code>/bags/download</code></td>
+            <td>GET</td>
+            <td>Download a bag file, including support for HTTP byte ranges.</td>
+        </tr>
+        <tr>
+            <td><code>/bags/upload</code></td>
+            <td>POST</td>
+            <td>Upload a bag file to a configured storage backend.</td>
+        </tr>
+        <tr>
+            <td><code>/bags/update</code></td>
+            <td>POST</td>
+            <td>Update mutable bag metadata such as location, vehicle, tags, and description.</td>
+        </tr>
+        <tr>
+            <td><code>/bags/getTagsForBag</code></td>
+            <td>GET</td>
+            <td>Return tags associated with a bag.</td>
+        </tr>
+        <tr>
+            <td><code>/bags/setTag</code>, <code>/bags/setTagForBags</code>, <code>/bags/removeTags</code></td>
+            <td>POST</td>
+            <td>Add or remove bag tags.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2>Example Search</h2>
+    <pre><code>curl -s -b cookies.txt \
+    "$URL/bags/search?text=&amp;page=1&amp;start=0&amp;limit=100&amp;sort=filename&amp;dir=ASC"</code></pre>
+
+    <h2>Script Endpoints</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Endpoint</th>
+            <th>Method</th>
+            <th>Purpose</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><code>/scripts/list</code></td>
+            <td>GET</td>
+            <td>List configured scripts.</td>
+        </tr>
+        <tr>
+            <td><code>/scripts/save</code></td>
+            <td>POST</td>
+            <td>Create or update a script definition.</td>
+        </tr>
+        <tr>
+            <td><code>/scripts/run</code></td>
+            <td>POST</td>
+            <td>Run a script on one or more bag ids.</td>
+        </tr>
+        <tr>
+            <td><code>/scripts/list_results</code></td>
+            <td>GET</td>
+            <td>List script run results.</td>
+        </tr>
+        <tr>
+            <td><code>/scripts/get_result_by_uuid</code></td>
+            <td>GET</td>
+            <td>Fetch one script run result by UUID.</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
