@@ -52,8 +52,8 @@ that previous had GPS coordinates successfully extracted will not be re-processe
 
 ### Update reverse-geocoded locations
 
-If the reverse-geocoding service is enabled, attempts to find the location name for every
-bag file and update it in the database.
+If `amapApiKey` is configured, attempts to find the location name for every bag file
+through the Amap/Gaode reverse-geocoding API and update it in the database.
 
 ### Re-scan all bag vehicle names
 

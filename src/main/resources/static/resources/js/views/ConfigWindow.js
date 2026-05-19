@@ -70,8 +70,8 @@ Ext.define('BagDatabase.views.ConfigWindow', {
             inputType: 'password',
             name: 'jdbcPassword'
         }, {
-            fieldLabel: 'Google API Key',
-            name: 'googleApiKey'
+            fieldLabel: 'Amap API Key',
+            name: 'amapApiKey'
         }, {
             fieldLabel: 'Temporary Script Path',
             name: 'scriptTmpPath'

@@ -27,6 +27,7 @@ point by copying `/root/.ros-bag-database/settings.yml` out of the container.
 For reference, this is what a normal `settings.yml` file looks like:
 ```yaml
 !com.github.swrirobotics.support.web.Configuration
+amapApiKey: your-amap-web-service-key
 bagPath: /var/local/bags
 dockerHost: http://localhost:2375
 driver: org.postgresql.Driver
@@ -67,3 +68,8 @@ Some of these values can be edited through the
 [Configuration](../web-interface/administration#bag-database-configuration)
 panel when the application can write to `settings.yml`. If your deployment mounts
 the file read-only, edit the file outside the application and restart.
+
+`amapApiKey` is optional. Configure it only if you want Bag Database to resolve
+GPS coordinates into human-readable location names through the Amap/Gaode Web
+Service reverse geocoding API. Map tiles and trajectory display do not require
+this key.

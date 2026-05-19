@@ -54,6 +54,7 @@ Example `settings.yml`:
 ```yaml
 !com.github.swrirobotics.support.web.Configuration
 adminPassword: change-me-on-first-login
+amapApiKey:
 dockerHost:
 driver: org.postgresql.Driver
 jdbcPassword: letmein

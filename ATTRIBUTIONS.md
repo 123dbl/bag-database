@@ -90,10 +90,6 @@ Apache Commons Lang 3.3.2
 - License: Apache 2.0
 - https://commons.apache.org/proper/commons-lang/
 
-Google Maps Services 0.1.20
-- License: Apache 2.0
-- https://github.com/googlemaps/google-maps-services-java
-
 YamlBeans 1.11
 - License: BSD
 - https://github.com/EsotericSoftware/yamlbeans

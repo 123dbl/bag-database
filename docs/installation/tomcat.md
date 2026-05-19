@@ -43,9 +43,9 @@ the user that the `tomcat` service is running as.
 
     ```yml
     !com.github.swrirobotics.support.web.Configuration
+    amapApiKey: your-amap-web-service-key
     dockerHost: http://localhost:2375
     driver: org.postgresql.Driver
-    googleApiKey: PKnOQDvUxRJ0bEZdBH7m
     gpsTopics: 
     - /localization/gps
     - /gps

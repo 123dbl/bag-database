@@ -1,4 +1,5 @@
 !com.github.swrirobotics.support.web.Configuration
+amapApiKey: ''
 dockerHost: http://docker:2375
 driver: org.postgresql.Driver
 gpsTopics:
@@ -25,4 +26,3 @@ storageConfigurations:
         endPoint: 'YOUR_END_POINT'  # Replace with your endpoint if not using Amazon; otherwise delete this line
         region: 'YOUR_REGION_HERE'  # Replace with your region if using Amazon; otherwise delete this line
         bucket: 'YOUR_BUCKET_NAME'  # Replace with your bucket name
-

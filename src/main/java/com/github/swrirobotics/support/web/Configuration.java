@@ -49,7 +49,7 @@ public class Configuration implements Serializable {
     private String jdbcUsername = "sa";
     private String jdbcUrl = "jdbc:h2:mem:testdb";
     private String jdbcPassword = "";
-    private String googleApiKey = "";
+    private String amapApiKey = "";
     private String scriptTmpPath = "/scripts";
     private String adminPassword = "";
     private String[] vehicleNameTopics = new String[0];
@@ -125,12 +125,18 @@ public class Configuration implements Serializable {
         this.jdbcPassword = jdbcPassword;
     }
 
-    public String getGoogleApiKey() {
-        return googleApiKey;
+    public String getAmapApiKey() {
+        return amapApiKey;
     }
 
+    public void setAmapApiKey(String amapApiKey) {
+        this.amapApiKey = amapApiKey;
+    }
+
+    @Deprecated
     public void setGoogleApiKey(String googleApiKey) {
-        this.googleApiKey = googleApiKey;
+        // Kept only so old settings.yml files can still be parsed after the
+        // reverse-geocoding provider changed from Google to Amap/Gaode.
     }
 
     public String getScriptTmpPath() {
