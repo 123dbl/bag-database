@@ -59,6 +59,8 @@ Copies links to the clipboard that can be used to download the selected bags.
 ### Map Bag
 
 Displays a map that displays all of the selected bags' GPS coordinates as a single route.
+The map view uses GCJ02 map tiles by default and converts the route from WGS84 to GCJ02
+before drawing it, so GPS tracks line up with Amap/Gaode base maps.
 
 Note that the map icon on the right side of each row acts as a quick link to display the
 coordinates for only that bag, and it also serves to quickly indicate whether a bag has
@@ -66,10 +68,11 @@ any GPS coordinates at all; it will be grayed out if none are available.
 
 ![Map View](../assets/images/list_view_map.png)
 
-By default, the Bag Database uses map tiles provided by [Stamen](http://maps.stamen.com/), which
-are freely available under the [CC BY 3.0](http://maps.stamen.com/) license.  Configuration options
-as described in [Docker](../installation/docker) can be used to load tiles from a different WMTS tile
-server or from Microsoft Bing.
+By default, the Bag Database uses the Amap/Gaode normal tile URL:
+`https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}`.
+The map window can switch to the Amap/Gaode satellite base map:
+`https://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}`.
+The map window is resizable and can be maximized for a full-screen trajectory view.
 
 ### Download Bag
 

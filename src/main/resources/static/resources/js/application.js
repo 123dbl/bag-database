@@ -28,6 +28,10 @@
 //
 // *****************************************************************************
 
+var BAG_DATABASE_AMAP_NORMAL_TILE_URL = 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}';
+var BAG_DATABASE_AMAP_SATELLITE_TILE_URL = 'https://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}';
+var BAG_DATABASE_LEGACY_STAMEN_TILE_URL = 'http://{a-d}.tile.stamen.com/terrain/{z}/{x}/{y}.jpg';
+
 /**
  * Starts the bag database application.
  */

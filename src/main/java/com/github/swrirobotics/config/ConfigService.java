@@ -159,6 +159,18 @@ public class ConfigService {
             if (config.getJdbcPassword() == null || config.getJdbcPassword().isEmpty()) {
                 config.setJdbcPassword(oldConfig.getJdbcPassword());
             }
+            if (notifyBagScanner) {
+                config.setAdminPassword(oldConfig.getAdminPassword());
+                config.setDebugJavascript(oldConfig.getDebugJavascript());
+                config.setFasterCodec(oldConfig.getFasterCodec());
+                config.setLdapBindDn(oldConfig.getLdapBindDn());
+                config.setLdapBindPassword(oldConfig.getLdapBindPassword());
+                config.setLdapSearchBase(oldConfig.getLdapSearchBase());
+                config.setLdapServer(oldConfig.getLdapServer());
+                config.setLdapUserPattern(oldConfig.getLdapUserPattern());
+                config.setOpenWithUrls(oldConfig.getOpenWithUrls());
+                config.setStorageConfigurations(oldConfig.getStorageConfigurations());
+            }
             bagPathChanged = !oldConfig.getBagPath().equals(config.getBagPath());
             writer.write(config);
         }

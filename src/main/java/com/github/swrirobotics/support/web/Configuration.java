@@ -40,6 +40,8 @@ import java.util.Map;
 
 public class Configuration implements Serializable {
     private static final long serialVersionUID = 7088819138941988062L;
+    public static final String DEFAULT_TILE_MAP_URL = "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}";
+    public static final String DEFAULT_SATELLITE_TILE_MAP_URL = "https://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}";
 
     private String bagPath = "/bags";
     private String dockerHost = "";
@@ -69,7 +71,8 @@ public class Configuration implements Serializable {
     // MapQuest is actually unsupported now and this will enable/disable
     // generic tile map support.
     private Boolean useMapQuest = true;
-    private String tileMapUrl = "http://{a-d}.tile.stamen.com/terrain/{z}/{x}/{y}.jpg";
+    private String tileMapUrl = DEFAULT_TILE_MAP_URL;
+    private String satelliteTileMapUrl = DEFAULT_SATELLITE_TILE_MAP_URL;
     private Integer tileWidthPx = 256;
     private Integer tileHeightPx = 256;
 
@@ -218,6 +221,14 @@ public class Configuration implements Serializable {
 
     public void setTileMapUrl(String tileMapUrl) {
         this.tileMapUrl = tileMapUrl;
+    }
+
+    public String getSatelliteTileMapUrl() {
+        return satelliteTileMapUrl;
+    }
+
+    public void setSatelliteTileMapUrl(String satelliteTileMapUrl) {
+        this.satelliteTileMapUrl = satelliteTileMapUrl;
     }
 
     public Integer getTileWidthPx() {

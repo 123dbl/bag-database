@@ -33,16 +33,19 @@ Ext.define('BagDatabase.views.ConfigWindow', {
     alias: 'widget.configWindow',
     layout: 'fit',
     title: 'Bag Database Configuration',
-    width: 500,
+    width: 760,
+    minWidth: 680,
+    maxHeight: 720,
     constrainHeader: true,
     items: [{
         xtype: 'form',
-        bodyPadding: 5,
+        autoScroll: true,
+        bodyPadding: 8,
         itemId: 'configForm',
         url: 'config/get',
         defaultType: 'textfield',
         defaults: {
-            labelWidth: 140,
+            labelWidth: 180,
             width: '100%'
         },
         items: [{
@@ -79,33 +82,73 @@ Ext.define('BagDatabase.views.ConfigWindow', {
             uncheckedValue: false,
             inputValue: true
         }, {
-            fieldLabel: 'Use Tile Map',
-            name: 'useMapQuest',
-            xtype: 'checkboxfield',
-            uncheckedValue: false,
-            inputValue: true
-        }, {
-            fieldLabel: 'Tile Map URL',
-            name: 'tileMapUrl'
-        }, {
-            fieldLabel: 'Tile Width (px)',
-            name: 'tileWidthPx',
-            xtype: 'numberfield',
-            minValue: 1
-        }, {
-            fieldLabel: 'Tile Height (px)',
-            name: 'tileHeightPx',
-            xtype: 'numberfield',
-            minValue: 1
-        }, {
-            fieldLabel: 'Use Bing Maps',
-            name: 'useBing',
-            xtype: 'checkboxfield',
-            uncheckedValue: false,
-            inputValue: true
-        }, {
-            fieldLabel: 'Bing Maps API Key',
-            name: 'bingKey'
+            xtype: 'fieldset',
+            title: 'Map Display',
+            defaultType: 'textfield',
+            defaults: {
+                labelWidth: 180,
+                width: '100%'
+            },
+            items: [{
+                xtype: 'displayfield',
+                fieldLabel: 'Coordinate System',
+                value: 'Base map: GCJ02; GPS tracks are converted from WGS84 automatically.'
+            }, {
+                fieldLabel: 'Use Tile Map',
+                name: 'useMapQuest',
+                xtype: 'checkboxfield',
+                uncheckedValue: false,
+                inputValue: true
+            }, {
+                fieldLabel: 'Normal Tile URL',
+                name: 'tileMapUrl',
+                itemId: 'tileMapUrlField',
+                emptyText: BAG_DATABASE_AMAP_NORMAL_TILE_URL,
+                inputAttrTpl: 'spellcheck="false"'
+            }, {
+                fieldLabel: 'Satellite Tile URL',
+                name: 'satelliteTileMapUrl',
+                itemId: 'satelliteTileMapUrlField',
+                emptyText: BAG_DATABASE_AMAP_SATELLITE_TILE_URL,
+                inputAttrTpl: 'spellcheck="false"'
+            }, {
+                xtype: 'container',
+                layout: 'hbox',
+                defaults: {
+                    xtype: 'button',
+                    margin: '0 8 8 0'
+                },
+                items: [{
+                    text: 'Use Amap Normal',
+                    handler: function(button) {
+                        button.up('form').down('#tileMapUrlField').setValue(BAG_DATABASE_AMAP_NORMAL_TILE_URL);
+                    }
+                }, {
+                    text: 'Use Amap Satellite',
+                    handler: function(button) {
+                        button.up('form').down('#satelliteTileMapUrlField').setValue(BAG_DATABASE_AMAP_SATELLITE_TILE_URL);
+                    }
+                }]
+            }, {
+                fieldLabel: 'Tile Width (px)',
+                name: 'tileWidthPx',
+                xtype: 'numberfield',
+                minValue: 1
+            }, {
+                fieldLabel: 'Tile Height (px)',
+                name: 'tileHeightPx',
+                xtype: 'numberfield',
+                minValue: 1
+            }, {
+                fieldLabel: 'Use Bing Maps',
+                name: 'useBing',
+                xtype: 'checkboxfield',
+                uncheckedValue: false,
+                inputValue: true
+            }, {
+                fieldLabel: 'Bing Maps API Key',
+                name: 'bingKey'
+            }]
         }, {
             fieldLabel: 'Vehicle Name Topics',
             name: 'vehicleNameTopics'
@@ -117,7 +160,12 @@ Ext.define('BagDatabase.views.ConfigWindow', {
             name: 'gpsTopics'
         }, {
             fieldLabel: 'Open With URLs',
-            name: 'openWithUrls'
+            name: 'openWithUrls',
+            itemId: 'openWithUrlsField',
+            xtype: 'textarea',
+            height: 80,
+            readOnly: true,
+            submitValue: false
         }],
         buttons: [{
             text: 'Save',
@@ -147,6 +195,23 @@ Ext.define('BagDatabase.views.ConfigWindow', {
         var configForm = this.down('#configForm');
         configForm.getForm().baseParams = this.params;
 
-        this.down('#configForm').load();
+        this.down('#configForm').load({
+            success: function(form, action) {
+                var data, openWithField, satelliteField, tileField;
+                tileField = form.findField('tileMapUrl');
+                satelliteField = form.findField('satelliteTileMapUrl');
+                openWithField = form.findField('openWithUrls');
+                data = action && action.result ? action.result.data : null;
+                if (tileField && tileField.getValue() === BAG_DATABASE_LEGACY_STAMEN_TILE_URL) {
+                    tileField.setValue(BAG_DATABASE_AMAP_NORMAL_TILE_URL);
+                }
+                if (satelliteField && !satelliteField.getValue()) {
+                    satelliteField.setValue(BAG_DATABASE_AMAP_SATELLITE_TILE_URL);
+                }
+                if (openWithField && data && data.openWithUrls) {
+                    openWithField.setValue(JSON.stringify(data.openWithUrls, null, 2));
+                }
+            }
+        });
     }
 });
