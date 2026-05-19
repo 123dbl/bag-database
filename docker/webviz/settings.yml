@@ -1,5 +1,6 @@
 !com.github.swrirobotics.support.web.Configuration
 adminPassword: random_bagdb_password
+amapApiKey: ''
 dockerHost: http://docker:2375
 driver: org.postgresql.Driver
 gpsTopics:
