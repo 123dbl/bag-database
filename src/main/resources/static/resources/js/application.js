@@ -44,6 +44,64 @@ if (typeof window.bagGridDateRenderer !== 'function') {
     window.bagGridDateRenderer = Ext.util.Format.dateRenderer('n/j/Y H:i:s');
 }
 
+if (typeof window.parseBagDatabaseDate !== 'function') {
+    window.parseBagDatabaseDate = function(value) {
+        var date, fractionalMs, match, offset, offsetMinutes, timestamp;
+
+        if (!value) {
+            return null;
+        }
+        if (Ext.isDate(value)) {
+            return value;
+        }
+        if (typeof value === 'number') {
+            return new Date(value);
+        }
+        if (typeof value !== 'string') {
+            return null;
+        }
+        if (/^\d+$/.test(value)) {
+            return new Date(parseInt(value, 10));
+        }
+
+        match = value.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,9}))?(?:([Zz]|[+-]\d{2}:?\d{2}))?$/);
+        if (match) {
+            fractionalMs = match[7] ? parseInt((match[7] + '000').slice(0, 3), 10) : 0;
+            if (match[8]) {
+                timestamp = Date.UTC(
+                    parseInt(match[1], 10),
+                    parseInt(match[2], 10) - 1,
+                    parseInt(match[3], 10),
+                    parseInt(match[4], 10),
+                    parseInt(match[5], 10),
+                    parseInt(match[6], 10),
+                    fractionalMs
+                );
+                if (match[8] !== 'Z' && match[8] !== 'z') {
+                    offset = match[8].replace(':', '');
+                    offsetMinutes = (parseInt(offset.substr(1, 2), 10) * 60 +
+                        parseInt(offset.substr(3, 2), 10)) * (offset.charAt(0) === '-' ? -1 : 1);
+                    timestamp -= offsetMinutes * 60000;
+                }
+                return new Date(timestamp);
+            }
+
+            return new Date(
+                parseInt(match[1], 10),
+                parseInt(match[2], 10) - 1,
+                parseInt(match[3], 10),
+                parseInt(match[4], 10),
+                parseInt(match[5], 10),
+                parseInt(match[6], 10),
+                fractionalMs
+            );
+        }
+
+        date = new Date(value);
+        return isNaN(date.getTime()) ? null : date;
+    };
+}
+
 Ext.onReady(function() {
     // Set up our state provider before we start the app so we can reliably
     // restore our previous state.

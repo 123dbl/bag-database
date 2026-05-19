@@ -28,22 +28,63 @@
 //
 // *****************************************************************************
 
+function isBagUploadActive(status) {
+    return status === 'Uploading' || status === 'Processing';
+}
+
+function getBagUploadStore() {
+    Ext.ns('BagDatabase.uploads');
+
+    if (!BagDatabase.uploads.store) {
+        BagDatabase.uploads.store = Ext.create('Ext.data.Store', {
+            autoDestroy: false,
+            fields: ['name', 'size', 'file', 'status', 'progress']
+        });
+    }
+
+    return BagDatabase.uploads.store;
+}
+
+function addBagUploadFile(store, file) {
+    store.add({
+        file: file,
+        name: file.name,
+        size: file.size,
+        status: 'Ready',
+        progress: 0
+    });
+}
+
+function setBagUploadState(item, status, progress) {
+    var values;
+    values = {
+        status: status
+    };
+
+    if (typeof progress === 'number') {
+        values.progress = progress;
+    }
+
+    if (item.get('status') !== values.status ||
+        (typeof values.progress === 'number' && item.get('progress') !== values.progress)) {
+        item.set(values);
+        item.commit();
+    }
+}
+
 Ext.define('BagDatabase.views.BagUploadWindow', {
     extend: 'Ext.window.Window',
     alias: 'widget.bagUploadWindow',
     layout: 'fit',
     title: 'Upload Bags',
     iconCls: 'bag-add-icon',
-    width: 500,
+    width: 620,
     height: 400,
     constrainHeader: true,
     items: [{
         multiSelect: true,
         xtype: 'grid',
-        store: {
-            //storeId: 'bagUploadStore',
-            fields: ['name', 'size', 'file', 'status']
-        },
+        store: getBagUploadStore(),
         columns: [{
             header: 'Name',
             dataIndex: 'name',
@@ -56,21 +97,39 @@ Ext.define('BagDatabase.views.BagUploadWindow', {
         }, {
             header: 'Status',
             dataIndex: 'status',
-            flex: 1,
+            flex: 1.15,
             renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-                // TODO pjr Would be cool if there was a progress bar for uploads here
-                var color = "grey";
+                var color;
+                color = "grey";
+
                 if (value === "Ready") {
                     color = "blue";
                 } else if (value === "Uploading") {
                     color = "orange";
+                } else if (value === "Processing") {
+                    color = "orange";
                 } else if (value === "Uploaded") {
                     color = "green";
-                } else if (value.startsWith("Error")) {
+                } else if (value && value.startsWith("Error")) {
                     color = "red";
                 }
                 metaData.tdStyle = 'color:' + color + ";";
-                return value;
+                return Ext.String.htmlEncode(value || '');
+            }
+        }, {
+            header: 'Progress',
+            dataIndex: 'progress',
+            width: 90,
+            renderer: function(value, metaData, record, rowIndex, colIndex, store) {
+                var progress, status;
+                progress = typeof value === 'number' ? value : 0;
+                status = record.get('status');
+
+                if (status === 'Ready') {
+                    return '';
+                }
+
+                return progress + '%';
             }
         }],
 
@@ -135,12 +194,7 @@ Ext.define('BagDatabase.views.BagUploadWindow', {
                     });
                     return false;
                 }
-                store.add({
-                    file: file,
-                    name: file.name,
-                    size: file.size,
-                    status: 'Ready'
-                });
+                addBagUploadFile(store, file);
             });
             this.removeCls('drag-over');
         },
@@ -156,16 +210,16 @@ Ext.define('BagDatabase.views.BagUploadWindow', {
                 }
             },
             handler: function() {
-                var grid, store, postDocument, path;
+                var grid, store, postDocument, path, storageId;
                 grid = this.up('grid');
                 store = grid.store;
                 postDocument = grid.postDocument;
                 path = grid.down('#targetPath').getRawValue();
                 storageId = grid.down('#storageId').getRawValue();
                 store.each(function(item) {
-                    if (item.get('status') !== 'Uploaded') {
-                        item.set('status', 'Uploading');
-                        item.commit();
+                    if (item.get('status') !== 'Uploaded' &&
+                        !isBagUploadActive(item.get('status'))) {
+                        setBagUploadState(item, 'Uploading', 0);
                         postDocument('bags/upload', item, path, storageId);
                     }
                 });
@@ -181,8 +235,15 @@ Ext.define('BagDatabase.views.BagUploadWindow', {
                 }
             },
             handler: function() {
-                var store = this.up('grid').store;
-                store.reload();
+                var store, records;
+                store = this.up('grid').store;
+                records = [];
+                store.each(function(record) {
+                    if (!isBagUploadActive(record.get('status'))) {
+                        records.push(record);
+                    }
+                });
+                store.remove(records);
             }
         }, {
             text: "Clear Finished",
@@ -226,12 +287,7 @@ Ext.define('BagDatabase.views.BagUploadWindow', {
                             });
                             return false;
                         }
-                        store.add({
-                            file: file,
-                            name: file.name,
-                            size: file.size,
-                            status: 'Ready'
-                        });
+                        addBagUploadFile(store, file);
                     });
                 }
             }
@@ -296,6 +352,7 @@ Ext.define('BagDatabase.views.BagUploadWindow', {
             var xhr, fd;
             xhr = new XMLHttpRequest();
             fd = new FormData();
+
             fd.append("serverTimeDiff", 0);
             xhr.open("POST", url, true);
 
@@ -304,28 +361,46 @@ Ext.define('BagDatabase.views.BagUploadWindow', {
             fd.append(csrfName, csrfToken);
             fd.append('file', item.get('file'));
             xhr.setRequestHeader("serverTimeDiff", 0);
+            xhr.upload.onprogress = function(e) {
+                var progress;
+                if (e.lengthComputable) {
+                    progress = Math.round((e.loaded / e.total) * 100);
+                    progress = Math.max(0, Math.min(100, progress));
+                    if (progress >= 100) {
+                        setBagUploadState(item, 'Processing', 100);
+                    }
+                    else {
+                        setBagUploadState(item, 'Uploading', progress);
+                    }
+                }
+                else {
+                    setBagUploadState(item, 'Uploading', item.get('progress') || 0);
+                }
+            };
+            xhr.upload.onload = function() {
+                setBagUploadState(item, 'Processing', 100);
+            };
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         //handle the answer, in order to detect any server side error
                         var response = Ext.decode(xhr.responseText);
                         if (response.success) {
-                            item.set('status', 'Uploaded');
+                            setBagUploadState(item, 'Uploaded', 100);
                         }
                         else {
-                            item.set('status', 'Error: ' + response.message);
+                            setBagUploadState(item, 'Error: ' + response.message);
                         }
                     }
                     else if (xhr.status === 500) {
-                        item.set('status', 'Error');
+                        setBagUploadState(item, 'Error');
                     }
                     else if (xhr.status === 0) {
-                        item.set('status', 'Max upload size (50GB) exceeded');
+                        setBagUploadState(item, 'Error: Max upload size (50GB) exceeded');
                     }
                     else {
-                        item.set('status', 'Unknown');
+                        setBagUploadState(item, 'Unknown');
                     }
-                    item.commit();
                 }
             };
             // Initiate a multipart/form-data upload

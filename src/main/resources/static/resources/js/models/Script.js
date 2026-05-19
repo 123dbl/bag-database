@@ -52,8 +52,8 @@ Ext.define('BagDatabase.models.Script', {
     }, {
         name: 'timeoutSecs', type: 'float'
     }, {
-        name: 'createdOn', type: 'date', dateFormat: 'time'
+        name: 'createdOn', type: 'date', convert: parseBagDatabaseDate
     }, {
-        name: 'updatedOn', type: 'date', dateFormat: 'time'
+        name: 'updatedOn', type: 'date', convert: parseBagDatabaseDate
     }]
 });

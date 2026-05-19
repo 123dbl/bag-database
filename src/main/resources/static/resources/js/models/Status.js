@@ -32,7 +32,7 @@ Ext.define('BagDatabase.models.Status', {
     extend: 'BagDatabase.models.Base',
     requires: ['BagDatabase.models.Base'],
     fields: [{
-        name: 'time', type: 'date', dateFormat: 'time'
+        name: 'time', type: 'date', convert: parseBagDatabaseDate
     }, {
         name: 'state'
     }, {

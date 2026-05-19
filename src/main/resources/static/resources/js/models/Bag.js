@@ -40,11 +40,11 @@ Ext.define('BagDatabase.models.Bag', {
     }, {
         name: 'compressed', type: 'boolean'
     }, {
-        name: 'createdOn', type: 'date', dateFormat: 'time'
+        name: 'createdOn', type: 'date', convert: parseBagDatabaseDate
     }, {
         name: 'duration', type: 'float'
     }, {
-        name: 'endTime', type: 'date', dateFormat: 'time'
+        name: 'endTime', type: 'date', convert: parseBagDatabaseDate
     }, {
         name: 'filename', sortType: function(value) {
             if (!value) {
@@ -88,11 +88,11 @@ Ext.define('BagDatabase.models.Bag', {
     }, {
         name: 'size', type: 'float'
     }, {
-        name: 'startTime', type: 'date', dateFormat: 'time'
+        name: 'startTime', type: 'date', convert: parseBagDatabaseDate
     }, {
         name: 'storageId'
     }, {
-        name: 'updatedOn', type: 'date', dateFormat: 'time'
+        name: 'updatedOn', type: 'date', convert: parseBagDatabaseDate
     }, {
         name: 'vehicle', sortType: function(value) {
             if (!value) {

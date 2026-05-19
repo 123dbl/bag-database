@@ -95,7 +95,13 @@ import java.io.OutputStream;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -122,6 +128,12 @@ public class BagService extends StatusProvider {
             new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING), 4326);
 
     private static final Logger myLogger = LoggerFactory.getLogger(BagService.class);
+    private static final long MIN_VALID_BAG_TIME_MS = 946684800000L; // 2000-01-01T00:00:00Z
+    private static final long MAX_VALID_BAG_TIME_MS = 4102444800000L; // 2100-01-01T00:00:00Z
+    private static final Pattern BAG_FILENAME_TIME_PATTERN = Pattern.compile(
+            ".*?(\\d{4}[-_]\\d{2}[-_]\\d{2}[-_]\\d{2}[-_]\\d{2}[-_]\\d{2}).*");
+    private static final DateTimeFormatter BAG_FILENAME_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
 
     static {
         try {
@@ -1257,6 +1269,153 @@ public class BagService extends StatusProvider {
         return positions;
     }
 
+    private boolean isValidBagTime(Timestamp timestamp) {
+        if (timestamp == null) {
+            return false;
+        }
+
+        long timeMs = timestamp.getTime();
+        return timeMs >= MIN_VALID_BAG_TIME_MS && timeMs < MAX_VALID_BAG_TIME_MS;
+    }
+
+    private Timestamp minTimestamp(Timestamp current, Timestamp candidate) {
+        if (!isValidBagTime(candidate)) {
+            return current;
+        }
+        if (current == null || candidate.before(current)) {
+            return candidate;
+        }
+        return current;
+    }
+
+    private Timestamp maxTimestamp(Timestamp current, Timestamp candidate) {
+        if (!isValidBagTime(candidate)) {
+            return current;
+        }
+        if (current == null || candidate.after(current)) {
+            return candidate;
+        }
+        return current;
+    }
+
+    private Timestamp getHeaderStamp(com.github.swrirobotics.bags.reader.messages.serialization.MessageType message) {
+        try {
+            com.github.swrirobotics.bags.reader.messages.serialization.MessageType header =
+                    message.getField("header");
+            TimeType time = header.getField("stamp");
+            return time.getValue();
+        }
+        catch (NullPointerException | UninitializedFieldException e) {
+            return null;
+        }
+    }
+
+    private Timestamp parseTimestampFromFilename(String filename) {
+        Matcher matcher = BAG_FILENAME_TIME_PATTERN.matcher(filename);
+        if (!matcher.matches()) {
+            return null;
+        }
+
+        String timestamp = matcher.group(1).replace('_', '-');
+        try {
+            return Timestamp.from(LocalDateTime.parse(timestamp, BAG_FILENAME_TIME_FORMAT)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant());
+        }
+        catch (DateTimeParseException e) {
+            myLogger.debug("Unable to parse timestamp from bag filename {}.", filename, e);
+            return null;
+        }
+    }
+
+    private Timestamp[] resolveBagTimeRange(BagWrapper wrapper, BagFile bagFile) {
+        Timestamp startTime = bagFile.getStartTime();
+        Timestamp endTime = bagFile.getEndTime();
+
+        if (isValidBagTime(startTime) && isValidBagTime(endTime)) {
+            return new Timestamp[]{ startTime, endTime };
+        }
+
+        myLogger.warn("Bag {} has invalid record time range: start={}, end={}. Trying message header stamps.",
+                bagFile.getPath(), startTime, endTime);
+
+        final Timestamp[] inferredRange = new Timestamp[]{ null, null };
+        try {
+            for (TopicInfo topic : bagFile.getTopics()) {
+                bagFile.forMessagesOnTopic(topic.getName(), (message, connection) -> {
+                    Timestamp stamp = getHeaderStamp(message);
+                    inferredRange[0] = minTimestamp(inferredRange[0], stamp);
+                    inferredRange[1] = maxTimestamp(inferredRange[1], stamp);
+                    return true;
+                });
+            }
+        }
+        catch (BagReaderException e) {
+            myLogger.warn("Unable to infer bag time range from message header stamps for {}.",
+                    bagFile.getPath(), e);
+        }
+
+        if (isValidBagTime(inferredRange[0]) && isValidBagTime(inferredRange[1])) {
+            myLogger.info("Using header stamp time range for {}: start={}, end={}.",
+                    bagFile.getPath(), inferredRange[0], inferredRange[1]);
+            return inferredRange;
+        }
+
+        Timestamp filenameTime = parseTimestampFromFilename(wrapper.getFilename());
+        if (isValidBagTime(filenameTime)) {
+            double durationS = bagFile.getDurationS();
+            Timestamp inferredEndTime = durationS > 0.0
+                    ? new Timestamp(filenameTime.getTime() + Math.round(durationS * 1000.0))
+                    : filenameTime;
+            myLogger.info("Using filename time for {}: start={}, end={}.",
+                    bagFile.getPath(), filenameTime, inferredEndTime);
+            return new Timestamp[]{ filenameTime, inferredEndTime };
+        }
+
+        myLogger.warn("Unable to infer a valid message header time range for {}. Keeping bag record times.",
+                bagFile.getPath());
+        return new Timestamp[]{ startTime, endTime };
+    }
+
+    private double resolveBagDurationS(BagFile bagFile, Timestamp[] timeRange) {
+        if (isValidBagTime(timeRange[0]) && isValidBagTime(timeRange[1]) &&
+                !timeRange[1].before(timeRange[0])) {
+            return (timeRange[1].getTime() - timeRange[0].getTime()) / 1000.0;
+        }
+
+        return bagFile.getDurationS();
+    }
+
+    private void updateBagMetadataFromFile(final Bag bag,
+                                           final BagWrapper wrapper,
+                                           final BagFile bagFile,
+                                           final String md5sum,
+                                           final String locationName,
+                                           final List<GpsPosition> gpsPositions,
+                                           final String storageId) {
+        Timestamp[] timeRange = resolveBagTimeRange(wrapper, bagFile);
+
+        bag.setPath(wrapper.getPath());
+        bag.setFilename(wrapper.getFilename());
+        bag.setMd5sum(md5sum);
+        bag.setCompressed(false);
+        bag.setDuration(resolveBagDurationS(bagFile, timeRange));
+        bag.setStartTime(timeRange[0]);
+        bag.setEndTime(timeRange[1]);
+        bag.setIndexed(bagFile.isIndexed());
+        bag.setMessageCount(bagFile.getMessageCount());
+        bag.setMissing(false);
+        bag.setSize(bagFile.getPath().toFile().length());
+        bag.setStorageId(storageId);
+        bag.setVersion(bagFile.getVersion());
+        bag.setVehicle(getVehicleName(bagFile));
+        if (!gpsPositions.isEmpty()) {
+            GpsPosition pos = gpsPositions.get(0);
+            bag.setCoordinate(makePoint(pos.latitude, pos.longitude));
+        }
+        bag.setLocation(locationName);
+    }
+
     public String getVehicleName(BagFile bag) {
         String[] vehicleNames = myConfigService.getConfiguration().getVehicleNameTopics();
         try {
@@ -1468,25 +1627,7 @@ public class BagService extends StatusProvider {
         myLogger.info("Adding new bag: " + absPath);
         // If it doesn't exist in the DB, create a new entry.
         bag.setCreatedOn(new Timestamp(System.currentTimeMillis()));
-        bag.setPath(wrapper.getPath());
-        bag.setFilename(wrapper.getFilename());
-        bag.setMd5sum(md5sum);
-        bag.setCompressed(false);
-        bag.setDuration(bagFile.getDurationS());
-        bag.setStartTime(bagFile.getStartTime());
-        bag.setEndTime(bagFile.getEndTime());
-        bag.setIndexed(bagFile.isIndexed());
-        bag.setMessageCount(bagFile.getMessageCount());
-        bag.setMissing(false);
-        bag.setSize(bagFile.getPath().toFile().length());
-        bag.setStorageId(storageId);
-        bag.setVersion(bagFile.getVersion());
-        bag.setVehicle(getVehicleName(bagFile));
-        if (!gpsPositions.isEmpty()) {
-            GpsPosition pos = gpsPositions.get(0);
-            bag.setCoordinate(makePoint(pos.latitude, pos.longitude));
-        }
-        bag.setLocation(locationName);
+        updateBagMetadataFromFile(bag, wrapper, bagFile, md5sum, locationName, gpsPositions, storageId);
         bag = myBagRepository.save(bag);
         myLogger.trace("Initial bag save for " + absPath);
 
@@ -1767,11 +1908,8 @@ public class BagService extends StatusProvider {
             // If we found a missing one, remove it from the list and update
             // its path.
             bag = myBagRepository.findById(bagId).orElseThrow();
-            bag.setPath(wrapper.getPath());
-            bag.setFilename(wrapper.getFilename());
-            bag.setMissing(false);
-            bag.setMd5sum(md5sum);
-            bag.setStorageId(storageId);
+            updateBagMetadataFromFile(bag, wrapper, wrapper.getBagFile(), md5sum, locationName, gpsPositions,
+                    storageId);
             addTagsToBag(wrapper.getBagFile(), bag);
         }
         myBagRepository.save(bag);

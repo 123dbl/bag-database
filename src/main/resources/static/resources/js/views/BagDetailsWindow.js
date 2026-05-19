@@ -145,10 +145,10 @@ Ext.define('BagDatabase.views.BagDetailsWindow', {
                 var bag, mts;
                 bag = Ext.util.JSON.decode(response.responseText);
                 me.setTitle('Bag Details (' + bag.filename + ')');
-                bag.createdOn = new Date(bag.createdOn);
-                bag.endTime = new Date(bag.endTime);
-                bag.startTime = new Date(bag.startTime);
-                bag.updatedOn = new Date(bag.updatedOn);
+                bag.createdOn = parseBagDatabaseDate(bag.createdOn);
+                bag.endTime = parseBagDatabaseDate(bag.endTime);
+                bag.startTime = parseBagDatabaseDate(bag.startTime);
+                bag.updatedOn = parseBagDatabaseDate(bag.updatedOn);
                 delete bag.expanded;
                 delete bag.leaf;
                 delete bag.parentId;

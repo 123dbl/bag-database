@@ -45,7 +45,7 @@ Ext.define('BagDatabase.models.ScriptResult', {
     }, {
         name: 'script'
     }, {
-        name: 'startTime', type: 'date', dateFormat: 'time'
+        name: 'startTime', type: 'date', convert: parseBagDatabaseDate
     }, {
         name: 'exitCode', type: 'int'
     }, {

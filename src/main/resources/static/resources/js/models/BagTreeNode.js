@@ -75,11 +75,11 @@ Ext.define('BagDatabase.models.BagTreeNode', {
     }, {
         name: 'compressed', mapping: 'bag.compressed', type: 'boolean'
     }, {
-        name: 'createdOn', mapping: 'bag.createdOn', type: 'date', dateFormat: 'time'
+        name: 'createdOn', mapping: 'bag.createdOn', type: 'date', convert: parseBagDatabaseDate
     }, {
         name: 'duration', mapping: 'bag.duration', type: 'float'
     }, {
-        name: 'endTime', mapping: 'bag.endTime', type: 'date', dateFormat: 'time'
+        name: 'endTime', mapping: 'bag.endTime', type: 'date', convert: parseBagDatabaseDate
     }, {
         name: 'hasPath', mapping: 'bag.hasPath', type: 'boolean'
     }, {
@@ -116,11 +116,11 @@ Ext.define('BagDatabase.models.BagTreeNode', {
     }, {
         name: 'size', mapping: 'bag.size', type: 'float'
     }, {
-        name: 'startTime', mapping: 'bag.startTime', type: 'date', dateFormat: 'time'
+        name: 'startTime', mapping: 'bag.startTime', type: 'date', convert: parseBagDatabaseDate
     }, {
         name: 'storageId', mapping: 'bag.storageId'
     }, {
-        name: 'updatedOn', mapping: 'bag.updatedOn', type: 'date', dateFormat: 'time'
+        name: 'updatedOn', mapping: 'bag.updatedOn', type: 'date', convert: parseBagDatabaseDate
     }, {
         name: 'vehicle', mapping: 'bag.vehicle', sortType: function(value) {
             if (!value) {
