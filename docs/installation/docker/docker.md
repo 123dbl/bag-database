@@ -45,7 +45,6 @@ For new deployments, prefer an explicit settings file; see
 | -------- | ----------- | ------- |
 | `ADMIN_PASSWORD` | The default password for administrative access.  If this is not set, one will be randomly generated and printed to the log file on initial startup. | |
 | `BAGDB_PATH` | The subdirectory to serve the Bag DB from.  For example, if this is `bagdb`, you might access it from `http://localhost:8080/bagdb/`.  Leaving this empty (the default) will serve it from the root path. | |
-| `BING_KEY` | The API key to use when connecting to Bing Maps.  You can get an API Key through the [Bing Maps Portal](https://www.bingmapsportal.com/). | |
 | `DB_DRIVER` | The class name of the JDBC driver to use. | org.hsqldb.jdbcDriver |
 | `DB_PASS` | The password to use when connecting to the database. | |
 | `DB_URL` | The JDBC URL for connecting to the database. | jdbc:hsqldb:mem:testdb |
@@ -66,7 +65,6 @@ For new deployments, prefer an explicit settings file; see
 | `TILE_HEIGHT_PX` | The height of the tiles returned from the tile map in pixels. | 256 |
 | `TILE_MAP_URL` | If `USE_TILE_MAP` is `true`, this URL will be used as a template for retrieving map tiles from a WMTS tile server.  See the documentation for the `url` property of OpenLayers' [ol.source.XYZ](http://openlayers.org/en/latest/apidoc/ol.source.XYZ.html) class.  The default value uses the Amap/Gaode normal GCJ02 tile map. | https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z} |
 | `TILE_WIDTH_PX` | The width of the tiles returned from the tile map in pixels. | 256 |
-| `USE_BING` | Set this to `true` to use Bing Maps for displaying map imagery; set it to `false` to disable Bing. | false |
 | `USE_TILE_MAP` | Set this to `true` to use a WMTS tile map for displaying map imagery; set it to `false` to disable WMTS maps. | true |
 | `VEHICLE_NAME_TOPICS` | A comma-separated list of `std_msg/String` topics that will be searched for a vehicle name; the first one found will be used. | |
 

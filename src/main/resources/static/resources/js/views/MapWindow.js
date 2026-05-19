@@ -97,17 +97,6 @@ Ext.define('BagDatabase.views.MapWindow', {
             }
         }];
 
-        if (typeof useBing !== 'undefined' && useBing && typeof bingKey !== 'undefined' && bingKey !== '') {
-            me.tbar[2].menu.items.push({
-                text: 'Bing Aerial',
-                checked: false,
-                group: layerGroup,
-                handler: function() {
-                    me.setBaseLayer('bing');
-                }
-            });
-        }
-
         this.callParent(arguments);
     },
     initializeMap: function() {
@@ -120,19 +109,6 @@ Ext.define('BagDatabase.views.MapWindow', {
             this.baseLayers.satellite = this.createAmapTileLayer(this.getSatelliteTileUrl(), false);
             layers.push(this.baseLayers.normal);
             layers.push(this.baseLayers.satellite);
-        }
-
-        if (typeof useBing !== 'undefined' && useBing && typeof bingKey !== 'undefined' && bingKey !== '') {
-            this.baseLayers.bing = new ol.layer.Tile({
-                visible: false,
-                source: new ol.source.BingMaps({
-                    crossOrigin: 'anonymous',
-                    key: bingKey,
-                    imagerySet: 'Aerial',
-                    maxZoom: 19
-                })
-            });
-            layers.push(this.baseLayers.bing);
         }
 
         controls = ol.control.defaults();
@@ -191,9 +167,6 @@ Ext.define('BagDatabase.views.MapWindow', {
     getBaseLayerText: function(layerName) {
         if (layerName === 'satellite') {
             return '高德卫星底图';
-        }
-        if (layerName === 'bing') {
-            return 'Bing Aerial';
         }
         return this.getNormalBaseLayerText();
     },

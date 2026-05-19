@@ -139,15 +139,6 @@ Ext.define('BagDatabase.views.ConfigWindow', {
                 name: 'tileHeightPx',
                 xtype: 'numberfield',
                 minValue: 1
-            }, {
-                fieldLabel: 'Use Bing Maps',
-                name: 'useBing',
-                xtype: 'checkboxfield',
-                uncheckedValue: false,
-                inputValue: true
-            }, {
-                fieldLabel: 'Bing Maps API Key',
-                name: 'bingKey'
             }]
         }, {
             fieldLabel: 'Vehicle Name Topics',

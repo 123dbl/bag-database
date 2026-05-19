@@ -51,8 +51,6 @@ public class Configuration implements Serializable {
     private String jdbcPassword = "";
     private String googleApiKey = "";
     private String scriptTmpPath = "/scripts";
-    private Boolean useBing = false;
-    private String bingKey = "";
     private String adminPassword = "";
     private String[] vehicleNameTopics = new String[0];
     private String[] metadataTopics = new String[0];
@@ -149,22 +147,6 @@ public class Configuration implements Serializable {
 
     public void setUseMapQuest(Boolean useMapQuest) {
         this.useMapQuest = useMapQuest;
-    }
-
-    public Boolean getUseBing() {
-        return useBing;
-    }
-
-    public void setUseBing(Boolean useBing) {
-        this.useBing = useBing;
-    }
-
-    public String getBingKey() {
-        return bingKey;
-    }
-
-    public void setBingKey(String bingKey) {
-        this.bingKey = bingKey;
     }
 
     public String getAdminPassword() {

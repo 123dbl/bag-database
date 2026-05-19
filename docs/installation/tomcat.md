@@ -43,7 +43,6 @@ the user that the `tomcat` service is running as.
 
     ```yml
     !com.github.swrirobotics.support.web.Configuration
-    bingKey: PKnOQDvUxRJ0bEZdBH7m
     dockerHost: http://localhost:2375
     driver: org.postgresql.Driver
     googleApiKey: PKnOQDvUxRJ0bEZdBH7m
@@ -54,8 +53,9 @@ the user that the `tomcat` service is running as.
     jdbcPassword: letmein
     jdbcUrl: jdbc:postgresql://bagdb-postgres/bag_database
     jdbcUsername: bag_database
-    useBing: true
     useMapQuest: false
+    satelliteTileMapUrl: 'https://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}'
+    tileMapUrl: 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}'
     vehicleNameTopics: 
     - /vms/vehicle_name
     ```
