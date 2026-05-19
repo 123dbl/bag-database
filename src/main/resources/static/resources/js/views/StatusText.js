@@ -43,9 +43,9 @@ Ext.define('BagDatabase.views.StatusText', {
         this.tpl = new Ext.XTemplate(
             '<tpl if="status.state == \'IDLE\'">' +
                 '<div class="status-text-icon tick-icon"/>' +
-            '<tpl elseif="status.state == \'WORKING\'"">' +
+            '<tpl elseif="status.state == \'WORKING\'">' +
                 '<div class="status-text-icon loading-icon"/>' +
-            '<tpl elseif="status.state == \'ERROR\'"">' +
+            '<tpl elseif="status.state == \'ERROR\'">' +
                 '<div class="status-text-icon cross-icon"/>' +
             '</tpl> ' +
             '<tpl if="source">{source}: </tpl>{status.message}');

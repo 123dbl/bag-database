@@ -31,6 +31,11 @@
 /**
  * Top-level container for the Bag Database application.
  */
+function getInitialActiveTab() {
+    var activeTab = Ext.state.Manager.get('active_tab', 0);
+    return typeof activeTab == 'number' && activeTab >= 0 && activeTab <= 2 ? activeTab : 0;
+}
+
 Ext.define('BagDatabase.views.BagDatabaseViewport',
 {
     extend:'Ext.container.Viewport',
@@ -42,7 +47,10 @@ Ext.define('BagDatabase.views.BagDatabaseViewport',
                 'BagDatabase.views.MapWindow',
                 'BagDatabase.views.SearchPanel',
                 'BagDatabase.views.BagTreeFilterPanel',
-                'BagDatabase.views.ScriptGrid'],
+                'BagDatabase.views.ScriptGrid',
+                'BagDatabase.views.ScriptResultGrid',
+                'BagDatabase.views.ErrorButton',
+                'BagDatabase.views.StatusText'],
     items: [{
         xtype: 'tabpanel',
         region: 'center',
@@ -50,8 +58,7 @@ Ext.define('BagDatabase.views.BagDatabaseViewport',
         stateful: true,
         stateId: 'tabPanel',
         stateEvents: ['tabchange'],
-        activeTab: typeof(Ext.state.Manager.get('active_tab', 0)) == 'number' ?
-                    Ext.state.Manager.get('active_tab', 0) : 0,
+        activeTab: getInitialActiveTab(),
         items: [{
             xtype: 'panel',
             layout: 'border',
@@ -183,21 +190,19 @@ Ext.define('BagDatabase.views.BagDatabaseViewport',
             this.stompClient.subscribe(topic, callback);
         }
     },
-    initComponent: function() {
-        var me, isStompConnected;
+    connectWebSocket: function() {
+        var me, headers, endpoint;
         me = this;
-        me.isStompConnected = false;
-        me.subscriptions = [];
-        me.stompClient = Stomp.over(function() {
-            return new SockJS(window.location.pathname + 'register');
-        });
+        headers = {};
+        endpoint = window.location.pathname.replace(/\/?$/, '/') + 'register';
 
-        // For the sake of convenience, the viewport creates a STOMP client.  Any other widgets that
-        // want to use the client for communication can use this client to subscribe.
-        var headers = {};
         if (csrfHeader && csrfToken) {
             headers[csrfHeader] = csrfToken;
         }
+
+        me.stompClient = Stomp.over(function() {
+            return new SockJS(endpoint);
+        });
 
         me.stompClient.connect(headers,
             function(frame) {
@@ -207,9 +212,24 @@ Ext.define('BagDatabase.views.BagDatabaseViewport',
                 });
             },
             function() {
+                me.isStompConnected = false;
                 console.log('Disconnected; reconnecting in 2s.');
-                Ext.Function.defer(me.connectWebSocket, 2000, me);
+                Ext.Function.defer(function() {
+                    if (!me.destroyed) {
+                        me.connectWebSocket();
+                    }
+                }, 2000);
             });
+    },
+    initComponent: function() {
+        var me;
+        me = this;
+        me.isStompConnected = false;
+        me.subscriptions = [];
+
+        // For the sake of convenience, the viewport creates a STOMP client.  Any other widgets that
+        // want to use the client for communication can use this client to subscribe.
+        me.connectWebSocket();
         setInterval(function() {
             if (me.stompClient.connected) {
                 me.stompClient.send('/topic/heartbeat', {priority: 9}, 'heartbeat');

@@ -44,6 +44,7 @@ public class WebSocketSecurityConfig {
     AuthorizationManager<Message<?>> messageAuthorizationManager(
             MessageMatcherDelegatingAuthorizationManager.Builder messages) {
         messages.simpDestMatchers("/**").permitAll();
+        messages.anyMessage().permitAll();
         return messages.build();
     }
 }

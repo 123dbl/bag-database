@@ -32,6 +32,7 @@ Ext.define('BagDatabase.views.ScriptResultGrid', {
     extend: 'Ext.grid.Panel',
     alias: 'widget.scriptResultGrid',
     requires: ['BagDatabase.models.ScriptResult',
+               'BagDatabase.stores.ScriptResultStore',
                'BagDatabase.stores.ScriptStore'],
     title: 'Script Results',
     columns: [{
