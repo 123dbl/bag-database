@@ -66,12 +66,12 @@ testing.
   - Environment variables for the PostGIS server.
 - [webviz-default.conf](https://github.com/swri-robotics/bag-database/blob/master/docker/webviz/webviz-default.conf)
   - A custom configuration file for the Webviz's nginx server.
-  - Change the ```location``` variable here because it will be running under an alias at ```/webviz``` in our reverse proxy.
+  - Serves Webviz under `/webviz` and proxies `/bags/` to Bag Database so Webviz can fetch bag files from the same origin.
 - [docker-compose.yml](https://github.com/swri-robotics/bag-database/blob/master/docker/webviz/docker-compose.yml)
   - Main docker-compose.yml file. If everything is configured correctly, the system can be started with `docker compose -f docker/webviz/docker-compose.yml up -d`.
   - After everything is running, you will be able to access the server at `https://bagdb.example.com`.
 - [docker-compose.local.yml](https://github.com/swri-robotics/bag-database/blob/master/docker/webviz/docker-compose.local.yml)
-  - Optional override that builds the local source tree as `bag-database:local`.
+  - Optional override that builds the local source tree as `bag-database:local` and exposes Bag Database at `http://localhost:8081` and Webviz at `http://localhost:8082/webviz/`.
 - [people.ldif](https://github.com/swri-robotics/bag-database/blob/master/docker/webviz/people.ldif)
   - An example LDIF file for creating a "People" group in your LDAP server.
   - After starting the server, run

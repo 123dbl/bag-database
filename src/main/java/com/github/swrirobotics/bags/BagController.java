@@ -72,7 +72,8 @@ public class BagController {
 
     @GetMapping(value="/download", produces="application/x-bag")
     @CrossOrigin(methods = {RequestMethod.GET, RequestMethod.HEAD},
-                 exposedHeaders = {"ETag", "Content-Type", "Content-Length", "Accept-Ranges"},
+                 allowedHeaders = {"Range", "If-Range", "Content-Type", "Accept", "Origin"},
+                 exposedHeaders = {"ETag", "Content-Type", "Content-Length", "Accept-Ranges", "Content-Range"},
                  maxAge = 3000)
     public ResponseEntity<ResourceRegion> downloadBag(
             @RequestHeader(value="Range", required=false) String rangeHeader,

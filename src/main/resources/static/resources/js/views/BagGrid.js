@@ -36,13 +36,14 @@
 function openBagIdsWith(label, bagIds) {
     const baseUrl = openWithUrls[label][0];
     const param = openWithUrls[label][1];
+    const downloadBaseUrl = openWithUrls[label][2] || new URL(baseUrl, document.location.href).origin + '/';
     var itemUrl = baseUrl + param + '=' +
-            encodeURIComponent(document.location.href + 'bags/download?bagId=' + bagIds[0]);
+            encodeURIComponent(new URL('bags/download?bagId=' + bagIds[0], downloadBaseUrl).href);
     if (bagIds.length > 1) {
         var i;
         for (i = 1; i < bagIds.length; i++) {
             itemUrl = itemUrl + '&' + param + '-' + (i+1) + '=' +
-                    encodeURIComponent(document.location.href + 'bags/download?bagId=' + bagIds[i]);
+                    encodeURIComponent(new URL('bags/download?bagId=' + bagIds[i], downloadBaseUrl).href);
         }
     }
     window.open(itemUrl, '_blank');

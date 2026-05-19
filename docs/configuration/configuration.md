@@ -54,6 +54,7 @@ openWithUrls:
   'Webviz':
       - 'https://webviz.io/app/?'
       - 'remote-bag-url'
+      - 'https://bagdb.example.com/'
   'Foxglove Studio':
       - 'https://studio.foxglove.dev/?'
       - 'remote-bag-url'

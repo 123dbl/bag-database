@@ -96,16 +96,21 @@ an environment variable.  For clarity, here's another example that is formatted 
 'Webviz': 
 - 'https://webviz.io/app/?'
 - 'remote-bag-url'
+- 'http://localhost:6080/bagdb/'
 'Foxglove Studio':
 - 'https://studio.foxglove.dev/?'
 - 'remote-bag-url'
 ```
 
 Each object in the map has a key that is used as the label in the UI, and each object has a list with
-two strings; the first is the base URL of the application, and the second is a parameter that should
-be set to the URL of the bag file.  In the above example, if a user is accessing a bag database at
+two or three strings. The first is the base URL of the application, the second is a parameter that should
+be set to the URL of the bag file, and the optional third value is the base URL to use when generating
+bag download URLs. In the above example, if a user is accessing a bag database at
 `http://localhost:6080/bagdb/` and selects a bag file with an ID of "10", it will open this URL
 in a new window: `https://webviz.io/app/?remote-bag-url=http%3A%2F%2Flocalhost%3A6080%2Fbagdb%2Fbags%2Fdownload%3FbagId%3D10`
+
+The optional third value is useful when a self-hosted Webviz instance proxies bag downloads through
+its own origin to avoid browser CORS restrictions.
 
 If a user selects multiple bags at once, the Bag Database will supply additional parameters based
 on what Webviz expects; for example, `remote-bag-url-2`.  A URL for two bags might look like:
